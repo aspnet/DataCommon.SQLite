@@ -126,7 +126,9 @@ namespace Microsoft.Data.SQLite
 
         public override int CommandTimeout { get; set; }
         public override bool DesignTimeVisible { get; set; }
+#if NET45
         public override UpdateRowSource UpdatedRowSource { get; set; }
+#endif
 
         protected override DbParameter CreateDbParameter()
         {
