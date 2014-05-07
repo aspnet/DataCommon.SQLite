@@ -6,12 +6,13 @@
   "configurations": {
     "net451": {
       "dependencies": {
-        "System.Data": "",
-        "Microsoft.Net.Runtime.Interfaces": "0.1-alpha-*"
+        "Microsoft.Net.Runtime.Interfaces": "0.1-alpha-*",
+        "System.Data": ""
       }
     },
     "k10": {
       "dependencies": {
+        "Microsoft.Net.Runtime.Interfaces": "0.1-alpha-*",
         "System.Collections": "4.0.0.0",
         "System.ComponentModel": "4.0.0.0",
         "System.Diagnostics.Debug": "4.0.10.0",
@@ -25,8 +26,7 @@
         "System.Runtime.Extensions": "4.0.10.0",
         "System.Runtime.Handles": "4.0.0.0",
         "System.Runtime.InteropServices": "4.0.20.0",
-        "System.Text.Encoding": "4.0.20.0",
-        "Microsoft.Net.Runtime.Interfaces": "0.1-alpha-*"
+        "System.Text.Encoding": "4.0.20.0"
       }
     },
     ".NETPortable,Version=4.6,Profile=Profile151": {
