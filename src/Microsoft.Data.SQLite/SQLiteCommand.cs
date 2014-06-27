@@ -175,7 +175,7 @@ namespace Microsoft.Data.SQLite
                 out tail);
             MarshalEx.ThrowExceptionForRC(rc);
 
-            if (!string.IsNullOrEmpty(tail))
+            if (!string.IsNullOrWhiteSpace(tail))
                 throw new InvalidOperationException(Strings.BatchNotSupported);
 
             _prepared = true;

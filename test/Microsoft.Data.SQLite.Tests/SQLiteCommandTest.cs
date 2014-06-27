@@ -184,6 +184,19 @@ namespace Microsoft.Data.SQLite
         }
 
         [Fact]
+        public void Prepare_ignores_trailing_whitespace()
+        {
+            using (var connection = new SQLiteConnection("Filename=:memory:"))
+            using (var command = connection.CreateCommand())
+            {
+                command.CommandText = "SELECT 1; ";
+                connection.Open();
+
+                command.Prepare();
+            }
+        }
+
+        [Fact]
         public void ExecuteScalar_throws_when_open_reader()
         {
             using (var connection = new SQLiteConnection("Filename=:memory:"))
