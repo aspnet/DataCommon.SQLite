@@ -6,6 +6,11 @@
   "frameworks": {
     "net451": {
       "dependencies": {
+        "System.Data": ""
+      }
+    },
+    "aspnet50": {
+      "dependencies": {
         "System.Data": "",
         "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*"
       }
