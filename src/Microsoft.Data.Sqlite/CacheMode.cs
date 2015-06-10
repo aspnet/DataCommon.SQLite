@@ -10,3 +10,4 @@ namespace Microsoft.Data.Sqlite
         Shared
     }
 }
+Ignore this plz.
