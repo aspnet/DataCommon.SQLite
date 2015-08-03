@@ -1,6 +1,7 @@
 ﻿{
     "version": "1.0.0-*",
     "description": "SQLite implementation of the System.Data.Common provider model.",
+    "resource": ["Properties/Microsoft.Data.Sqlite.rd.xml"],
     "frameworks": {
         "net45": {
             "frameworkAssemblies": {
