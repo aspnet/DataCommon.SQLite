@@ -220,7 +220,7 @@ namespace Microsoft.Data.Sqlite
                     return "INTEGER";
 
                 default:
-                    Debug.Fail("Unexpected column type: " + sqliteType);
+                    Debug.Assert(false, "Unexpected column type: " + sqliteType);
                     return "INTEGER";
             }
         }
@@ -251,7 +251,7 @@ namespace Microsoft.Data.Sqlite
                     return typeof(int);
 
                 default:
-                    Debug.Fail("Unexpected column type: " + sqliteType);
+                    Debug.Assert(false, "Unexpected column type: " + sqliteType);
                     return typeof(int);
             }
         }
@@ -457,7 +457,7 @@ namespace Microsoft.Data.Sqlite
                     return DBNull.Value;
 
                 default:
-                    Debug.Fail("Unexpected column type: " + sqliteType);
+                    Debug.Assert(false, "Unexpected column type: " + sqliteType);
                     return GetInt32(ordinal);
             }
         }
