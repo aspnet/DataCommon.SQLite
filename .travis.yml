@@ -1,19 +1,20 @@
 language: csharp
-mono:
-  - alpha
-  - 4.0.2
-os:
-  - osx
-  - linux
 matrix:
-  exclude:
+  include:
     - os: linux
-      mono: 4.0.2
-    - os: osx
       mono: alpha
+    - os: osx
+      mono: 4.0.2
+      env: MONO_THREADS_PER_CPU=2000 MONO_MANAGED_WATCHER=disabled DYLD_LIBRARY_PATH=/usr/local/lib
 
-install: ./install_dependencies.sh
+install: 
+  - ./install_dependencies.sh
+  - ./build.sh validate
+  - source ./packages/KoreBuild/build/dnvm.sh
+  - dnvm install -u latest -r coreclr -a default-coreclr
 before_script:
   - sqlite3 -version
 script:
-  - ./build.sh --quiet verify
+  - ./build.sh --quiet compile
+  - dnvm run default -p test/Microsoft.Data.Sqlite.Tests/ test
+  - dnvm run default-coreclr -p test/Microsoft.Data.Sqlite.Tests/ test
