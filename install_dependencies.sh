@@ -11,6 +11,9 @@ if [ "$TRAVIS_OS_NAME" = "osx" ]; then
 	brew update
 	brew outdated sqlite || brew upgrade sqlite
 	brew link sqlite --force
+	sudo sysctl -w kern.maxfiles=64000 
+ 	sudo sysctl -w kern.maxfilesperproc=64000 
+	sudo launchctl limit maxfiles 64000 64000 
 fi
 
 
