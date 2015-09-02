@@ -107,7 +107,7 @@ namespace Microsoft.Data.Sqlite
                         return;
 
                     default:
-                        Debug.Fail("Unexpected keyword: " + keyword);
+                        Debug.Assert(false, "Unexpected keyword: " + keyword);
                         return;
                 }
             }
@@ -176,7 +176,7 @@ namespace Microsoft.Data.Sqlite
                     return CacheMode;
 
                 default:
-                    Debug.Fail("Unexpected keyword: " + index);
+                    Debug.Assert(false, "Unexpected keyword: " + index);
                     return null;
             }
         }
@@ -206,7 +206,7 @@ namespace Microsoft.Data.Sqlite
 
 #if NET45 || DNX451 || DNXCORE50
                 default:
-                    Debug.Fail("Unexpected keyword: " + index);
+                    Debug.Assert(false, "Unexpected keyword: " + index);
                     return;
 #endif
             }
