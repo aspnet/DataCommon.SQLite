@@ -15,18 +15,26 @@ k-standard-goals
         K("test -parallel none", "test/Microsoft.Data.Sqlite.Tests", "default -r CoreCLR");
     }
 
-var sqliteDllPath='src/Microsoft.Data.Sqlite/runtimes/win-x86/native/sqlite3.dll'
-#sqlite-download target='initialize' if='!File.Exists(sqliteDllPath)'
+#test-x64 target='xunit-test' if='!IsMono'
+    @{
+        K("test -parallel none", "test/Microsoft.Data.Sqlite.Tests", "default -r clr -arch x64");
+        K("test -parallel none", "test/Microsoft.Data.Sqlite.Tests", "default -r coreclr -arch x64");
+    }
+
+#sqlite-download target='initialize'
     @{
         DownloadAndExtract(
             "https://sqlite.org/2015/sqlite-dll-win32-x86-3081101.zip",
-            Tuple.Create("sqlite3.dll", sqliteDllPath),
+            Tuple.Create("sqlite3.dll", "src/Microsoft.Data.Sqlite/runtimes/win-x86/native/sqlite3.dll"),
             Tuple.Create("sqlite3.dll", "src/Microsoft.Data.Sqlite/runtimes/win/native/x86/sqlite3.dll"));
         DownloadAndExtract(
             "https://sqlite.org/2015/sqlite-uap-3081101.vsix",
             Tuple.Create("Redist/Retail/x86/sqlite3.dll", "src/Microsoft.Data.Sqlite/runtimes/win10-x86/native/sqlite3.dll"),
             Tuple.Create("Redist/Retail/x64/sqlite3.dll", "src/Microsoft.Data.Sqlite/runtimes/win10-x64/native/sqlite3.dll"),
             Tuple.Create("Redist/Retail/ARM/sqlite3.dll", "src/Microsoft.Data.Sqlite/runtimes/win10-arm/native/sqlite3.dll"));
+        DownloadAndExtract(
+            "http://system.data.sqlite.org/blobs/1.0.98.0/sqlite-netFx451-static-binary-x64-2013-1.0.98.0.zip",
+            Tuple.Create("SQLite.Interop.dll", "src/Microsoft.Data.Sqlite/runtimes/win/native/x64/sqlite3.dll"));
     }
 
 functions
@@ -35,6 +43,11 @@ functions
             string uri,
             params Tuple<string, string>[] files)
         {
+            if(files.All(file => File.Exists(file.Item2)))
+            {
+                return;
+            }
+
             var tmpFile = "temp.zip";
             using (var webClient = new WebClient())
             {
