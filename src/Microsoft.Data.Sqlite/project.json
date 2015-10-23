@@ -3,18 +3,12 @@
   "description": "SQLite implementation of the System.Data.Common provider model.",
   "frameworks": {
     "net451": {
-      "dependencies": {
-        "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*",
-        "Microsoft.Extensions.DependencyInjection.Abstractions": "1.0.0-*"
-      },
       "frameworkAssemblies": {
         "System.Data": "4.0.0.0"
       }
     },
     "dotnet5.4": {
       "dependencies": {
-        "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*",
-        "Microsoft.Extensions.DependencyInjection.Abstractions": "1.0.0-*",
         "System.Collections": "4.0.11-*",
         "System.ComponentModel": "4.0.1-*",
         "System.Data.Common": "4.0.1-*",
