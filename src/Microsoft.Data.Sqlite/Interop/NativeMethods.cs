@@ -6,42 +6,11 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using static Microsoft.Data.Sqlite.Interop.Constants;
 
-#if NET451 || DOTNET5_4
-using System.IO;
-using System.Reflection;
-using Microsoft.Extensions.PlatformAbstractions;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Internal;
-#endif
 
 namespace Microsoft.Data.Sqlite.Interop
 {
     internal static class NativeMethods
     {
-#if NET451 || DOTNET5_4
-        static NativeMethods()
-        {
-            var loaded = NativeLibraryLoader.TryLoad("sqlite3");
-
-            // TODO: Remove when DNX supports native artifacts
-            if (!loaded)
-            {
-                var library = PlatformServices.Default.LibraryManager
-                    .GetLibrary(typeof(NativeMethods).GetTypeInfo().Assembly.GetName().Name);
-
-                var installPath = library.Path;
-                if (library.Type == "Project")
-                {
-                    installPath = Path.GetDirectoryName(installPath);
-                }
-
-                loaded = NativeLibraryLoader.TryLoad("sqlite3", Path.Combine(installPath, "runtimes/win/native"));
-            }
-
-            Debug.Assert(loaded, "loaded is false.");
-        }
-#endif
-
         [DllImport("sqlite3", CallingConvention = CallingConvention.Cdecl)]
         public static extern int sqlite3_bind_blob(Sqlite3StmtHandle pStmt, int i, byte[] zData, int nData, IntPtr xDel);
 
