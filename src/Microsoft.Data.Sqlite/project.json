@@ -51,6 +51,7 @@
     }
   },
   "packInclude": {
+    "build/": "build/**",
     "runtimes/": "runtimes/**",
     "runtimes/win/native/x86/": "runtimes/win/native/x86/*"
   }
