@@ -6,6 +6,7 @@ use namespace='System.Net.Http'
 var VERSION='0.1'
 var FULL_VERSION='0.1'
 var AUTHORS='.NET Foundation'
+default DOCKER_DIR = 'artifacts/docker/'
 
 use-standard-lifecycle
 k-standard-goals
@@ -31,6 +32,22 @@ var sqliteDllPath='src/Microsoft.Data.Sqlite/runtimes/win7-x86/native/sqlite3.dl
                 "Redist/Retail/ARM/sqlite3.dll",
                 "src/Microsoft.Data.Sqlite/build/netcore50/win10-arm/native/sqlite3.dll"));
     }
+default DOCKER_CMD='./run-tests.sh'
+#publish-docker .initialize
+  @{
+      var dnuArgs=string.Format("publish {0} --quiet --no-source --out {1} --configuration {2}", "test/Microsoft.Data.Sqlite.Tests/", DOCKER_DIR, "Release");
+      Dnu(dnuArgs);
+      File.Copy("tools/Dockerfile", Path.Combine(DOCKER_DIR, "Dockerfile"), true);
+      File.Copy("tools/run-tests.sh", Path.Combine(DOCKER_DIR, "run-tests.sh"), true);
+      Directory.CreateDirectory(Path.Combine(DOCKER_DIR, "approot/tools"));
+      File.Copy("tools/Key.snk", Path.Combine(DOCKER_DIR, "approot/tools/Key.snk"), true);
+  }
+
+#docker-test .publish-docker if="IsLinux"
+  exec program='./tools/docker-test.sh' commandline='${DOCKER_DIR} ${DOCKER_CMD}'
+
+#docker-test .publish-docker if="!IsLinux"
+  exec program='powershell' commandline='-ExecutionPolicy Bypass -NoLogo -NonInteractive -NoProfile ./tools/docker-test.ps1 ${DOCKER_DIR} ${DOCKER_CMD}'
 
 functions
     @{
