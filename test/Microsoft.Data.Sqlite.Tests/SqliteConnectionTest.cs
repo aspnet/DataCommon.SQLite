@@ -56,16 +56,43 @@ namespace Microsoft.Data.Sqlite
             Assert.Equal("main", connection.Database);
         }
 
+        [Theory]
+        [InlineData(":memory:")]
+        [InlineData("file:memdb1?mode=memory")]
+        [InlineData("file:memdb1?cache=shared&mode=memory")]
+        public void DataSource_returns_inmemory(string path)
+        {
+            var connection = new SqliteConnection("Data Source=" + path);
+            Assert.Equal(path, connection.DataSource);
+
+            connection.Open();
+
+            Assert.Equal(path, connection.DataSource);
+        }
+
+        [Theory]
+        [InlineData(":memory:", true)]
+        [InlineData("file:memdb1?mode=memory", true)]
+        [InlineData("file:memdb1?cache=shared&mode=memory", true)]
+        [InlineData("file::memory:?cache=shared", true)]
+        [InlineData("file:test.db", false)]
+        [InlineData("localfile.db", false)]
+        [InlineData("C:\\localfile.db", false)]
+        [InlineData("", false)]
+        public void IsInMemory(string path, bool isInMemory)
+            => Assert.Equal(isInMemory, SqliteConnection.IsInMemory(path));
+
+
         [Fact]
         public void DataSource_returns_connection_string_data_source_when_closed()
         {
             var connection = new SqliteConnection("Data Source=test.db");
 
-            Assert.Equal("test.db", connection.DataSource);
+            Assert.EndsWith("test.db", connection.DataSource);
+            Assert.True(Path.IsPathRooted(connection.DataSource));
         }
 
-        [ConditionalFact]
-        [SqliteVersionCondition(Min = "3.7.10")]
+        [Fact]
         public void DataSource_returns_actual_filename_when_open()
         {
             using (var connection = new SqliteConnection("Data Source=test.db"))
@@ -120,7 +147,7 @@ namespace Microsoft.Data.Sqlite
         [InlineData("file:data.db","file://{relativePath}/data.db")]
         [InlineData("file:data.db?mode=ro&cache=private", "file://{relativePath}/data.db?mode=ro&cache=private")]
         [InlineData("file:/home/data.db", "file:/home/data.db")]
-        public void AdjustForRelativeDirectory_handles_uri_format(string inputPath, string adjustedPath)
+        public void DataSource_handles_uri_format(string inputPath, string adjustedPath)
         {
             var relativePath = PlatformServices.Default.Application.ApplicationBasePath;
             if(PlatformServices.Default.Runtime.OperatingSystem == "Windows")
@@ -129,7 +156,7 @@ namespace Microsoft.Data.Sqlite
             }
 
             var expected = adjustedPath.Replace("{relativePath}", relativePath);
-            Assert.Equal(expected, SqliteConnection.AdjustForRelativeDirectory(inputPath));
+            Assert.Equal(expected, new SqliteConnection("Filename="+inputPath).DataSource);
         }
 #endif
 

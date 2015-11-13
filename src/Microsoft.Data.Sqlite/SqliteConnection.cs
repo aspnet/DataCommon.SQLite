@@ -61,16 +61,45 @@ namespace Microsoft.Data.Sqlite
 
         public override string Database => MainDatabaseName;
 
-        public override string DataSource =>
-            State == ConnectionState.Open
-                ? VersionedMethods.SqliteDbFilename(_db, MainDatabaseName) ?? ConnectionStringBuilder.DataSource
-                : ConnectionStringBuilder.DataSource;
+        public override string DataSource
+        {
+            get
+            {
+                var path = ConnectionStringBuilder.DataSource;
+                if (string.IsNullOrEmpty(path)
+                    || IsInMemory(path))
+                {
+                    return path; 
+                }
+
+                return AdjustForRelativeDirectory(path);
+            }
+        }
+
+        internal static bool IsInMemory(string path)
+        {
+            if (path == ":memory:"
+                || path.StartsWith("file::memory:"))
+            {
+                return true;
+            }
+
+            int queryStart;
+            if (!path.StartsWith("file:") || (queryStart = path.IndexOf('?')) < 0)
+            {
+                return false;
+            }
+
+            return path.Substring(queryStart).Contains("mode=memory");
+        }
 
         /// <summary>
         /// Corresponds to the version of the SQLite library used by the connection.
         /// </summary>
         public override string ServerVersion => NativeMethods.sqlite3_libversion();
+
         public override ConnectionState State => _state;
+
         protected internal SqliteTransaction Transaction { get; set; }
 
         private void SetState(ConnectionState value)
@@ -97,15 +126,9 @@ namespace Microsoft.Data.Sqlite
             var flags = Constants.SQLITE_OPEN_READWRITE | Constants.SQLITE_OPEN_CREATE;
             flags |= (ConnectionStringBuilder.Cache == SqliteConnectionCacheMode.Shared) ? Constants.SQLITE_OPEN_SHAREDCACHE : Constants.SQLITE_OPEN_PRIVATECACHE;
 
-            var path = ConnectionStringBuilder.DataSource;
-
-            if (!path.Equals(":memory:", StringComparison.OrdinalIgnoreCase))
-            {
-                path = AdjustForRelativeDirectory(path);
-            }
-
-            var rc = NativeMethods.sqlite3_open_v2(path, out _db, flags, vfs: null);
+            var rc = NativeMethods.sqlite3_open_v2(DataSource, out _db, flags, vfs: null);
             MarshalEx.ThrowExceptionForRC(rc, _db);
+
             SetState(ConnectionState.Open);
 
             SetFolders();
@@ -136,10 +159,12 @@ namespace Microsoft.Data.Sqlite
             }
         }
 #else
+
         private readonly static string DefaultBasePath = PlatformServices.Default.Application.ApplicationBasePath;
+
 #endif
 
-        internal static string AdjustForRelativeDirectory(string path)
+        private static string AdjustForRelativeDirectory(string path)
         {
             if (DefaultBasePath == null)
             {
