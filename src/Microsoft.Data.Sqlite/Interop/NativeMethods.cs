@@ -144,25 +144,6 @@ namespace Microsoft.Data.Sqlite.Interop
         [DllImport("sqlite3", CallingConvention = CallingConvention.Cdecl)]
         public static extern int sqlite3_column_type(Sqlite3StmtHandle stmt, int iCol);
 
-        [DllImport("sqlite3", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr sqlite3_db_filename(Sqlite3Handle db, IntPtr zDbName);
-
-        public static string sqlite3_db_filename(Sqlite3Handle db, string zDbName)
-        {
-            var ptr = MarshalEx.StringToHGlobalUTF8(zDbName);
-            try
-            {
-                return MarshalEx.PtrToStringUTF8(sqlite3_db_filename(db, ptr));
-            }
-            finally
-            {
-                if (ptr != IntPtr.Zero)
-                {
-                    Marshal.FreeHGlobal(ptr);
-                }
-            }
-        }
-
         [DllImport("sqlite3", EntryPoint = "sqlite3_errmsg", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr sqlite3_errmsg_raw(Sqlite3Handle db);
 

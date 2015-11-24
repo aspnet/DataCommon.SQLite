@@ -19,9 +19,6 @@ namespace Microsoft.Data.Sqlite.Interop
         public static int SqliteClose(IntPtr handle)
            => _strategy.Close(handle);
 
-        public static string SqliteDbFilename(Sqlite3Handle db, string databaseName)
-            => _strategy.DbFilename(db, databaseName);
-
         private static readonly StrategyBase _strategy = GetStrategy(new Version(NativeMethods.sqlite3_libversion()));
 
         private static StrategyBase GetStrategy(Version current)
@@ -34,10 +31,6 @@ namespace Microsoft.Data.Sqlite.Interop
             {
                 return new Strategy3_7_14();
             }
-            if (current >= new Version("3.7.10"))
-            {
-                return new Strategy3_7_10();
-            }
             return new StrategyBase();
         }
 
@@ -47,16 +40,10 @@ namespace Microsoft.Data.Sqlite.Interop
                 => NativeMethods.sqlite3_errstr(rc) + " " + base.ErrorString(rc);
         }
 
-        private class Strategy3_7_14 : Strategy3_7_10
+        private class Strategy3_7_14 : StrategyBase
         {
             public override int Close(IntPtr handle)
                 => NativeMethods.sqlite3_close_v2(handle);
-        }
-
-        private class Strategy3_7_10 : StrategyBase
-        {
-            public override string DbFilename(Sqlite3Handle db, string databaseName)
-                => NativeMethods.sqlite3_db_filename(db, databaseName);
         }
 
         private class StrategyBase
@@ -66,9 +53,6 @@ namespace Microsoft.Data.Sqlite.Interop
                 
             public virtual int Close(IntPtr handle)
                 => NativeMethods.sqlite3_close(handle);
-                
-            public virtual string DbFilename(Sqlite3Handle db, string databaseName)
-                => null;
         }
     }
 }
