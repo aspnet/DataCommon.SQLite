@@ -122,6 +122,10 @@ namespace Microsoft.Data.Sqlite
 
             do
             {
+                var currentStatement = tail.Split(';')[0];
+                var isReadOnlyPragma = currentStatement.StartsWith("PRAGMA ", StringComparison.OrdinalIgnoreCase)
+                                       && !currentStatement.Contains("=");
+
                 Sqlite3StmtHandle stmt;
                 var rc = NativeMethods.sqlite3_prepare_v2(
                         Connection.DbHandle,
@@ -187,9 +191,9 @@ namespace Microsoft.Data.Sqlite
                     throw;
                 }
 
-                // NB: This is only a heuristic to separate SELECT statements from INSERT/UPDATE/DELETE statements. It will result
+                // NB: This is only a heuristic to separate PRAGMA and SELECT statements from INSERT/UPDATE/DELETE statements. It will result
                 //     in unexpected corner cases, but it's the best we can do without re-parsing SQL
-                if (NativeMethods.sqlite3_stmt_readonly(stmt) != 0)
+                if (NativeMethods.sqlite3_stmt_readonly(stmt) != 0 || isReadOnlyPragma)
                 {
                     stmts.Enqueue(Tuple.Create(stmt, rc != SQLITE_DONE));
                 }

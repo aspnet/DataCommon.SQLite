@@ -24,6 +24,7 @@ namespace Microsoft.Data.Sqlite.Tests
             AssertConnectionOpens(connectionString, expectedPath);
         }
 
+        // Even with SQLITE_OPEN_URI, this still fails with the WinRT version of SQLite
         [Fact]
         public void Open_fails_with_file_uri()
         {

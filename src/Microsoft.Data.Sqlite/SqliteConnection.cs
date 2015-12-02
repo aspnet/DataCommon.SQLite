@@ -66,6 +66,23 @@ namespace Microsoft.Data.Sqlite
                 ? VersionedMethods.SqliteDbFilename(_db, MainDatabaseName) ?? ConnectionStringBuilder.DataSource
                 : ConnectionStringBuilder.DataSource;
 
+        internal static bool IsInMemory(string path)
+        {
+            if (path == ":memory:"
+                || path.StartsWith("file::memory:"))
+            {
+                return true;
+            }
+
+            int queryStart;
+            if (!path.StartsWith("file:") || (queryStart = path.IndexOf('?')) < 0)
+            {
+                return false;
+            }
+
+            return path.Substring(queryStart).Contains("mode=memory");
+        }
+
         /// <summary>
         /// Corresponds to the version of the SQLite library used by the connection.
         /// </summary>
@@ -94,12 +111,12 @@ namespace Microsoft.Data.Sqlite
                 throw new InvalidOperationException(Strings.OpenRequiresSetConnectionString);
             }
 
-            var flags = Constants.SQLITE_OPEN_READWRITE | Constants.SQLITE_OPEN_CREATE;
+            var flags = Constants.SQLITE_OPEN_READWRITE | Constants.SQLITE_OPEN_CREATE | Constants.SQLITE_OPEN_URI;
             flags |= (ConnectionStringBuilder.Cache == SqliteConnectionCacheMode.Shared) ? Constants.SQLITE_OPEN_SHAREDCACHE : Constants.SQLITE_OPEN_PRIVATECACHE;
 
             var path = ConnectionStringBuilder.DataSource;
 
-            if (!path.Equals(":memory:", StringComparison.OrdinalIgnoreCase))
+            if (!IsInMemory(path))
             {
                 path = AdjustForRelativeDirectory(path);
             }
