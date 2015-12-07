@@ -56,6 +56,35 @@ namespace Microsoft.Data.Sqlite
             Assert.Equal("main", connection.Database);
         }
 
+        [Theory]
+        [InlineData(":memory:")]
+        [InlineData("file:memdb1?mode=memory")]
+        [InlineData("file:memdb1?cache=shared&mode=memory")]
+        public void Opens_in_memory(string path)
+        {
+            using (var connection = new SqliteConnection("Data Source=" + path))
+            {
+                connection.Open();
+                var command = connection.CreateCommand();
+                command.CommandText = "PRAGMA journal_mode;";
+                var obj = command.ExecuteScalar() as string;
+                Assert.Equal("memory", obj);
+            }
+        }
+
+        [Theory]
+        [InlineData(":memory:", true)]
+        [InlineData("file:memdb1?mode=memory", true)]
+        [InlineData("file:memdb1?cache=shared&mode=memory", true)]
+        [InlineData("file::memory:?cache=shared", true)]
+        [InlineData("file:test.db", false)]
+        [InlineData("localfile.db", false)]
+        [InlineData("C:\\localfile.db", false)]
+        [InlineData("", false)]
+        public void IsInMemory(string path, bool isInMemory)
+            => Assert.Equal(isInMemory, SqliteConnection.IsInMemory(path));
+
+
         [Fact]
         public void DataSource_returns_connection_string_data_source_when_closed()
         {

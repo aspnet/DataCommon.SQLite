@@ -22,6 +22,7 @@ namespace Microsoft.Data.Sqlite.Interop
         public const int SQLITE_OPEN_PRIVATECACHE = 0x00040000;
         public const int SQLITE_OPEN_READWRITE = 0x00000002;
         public const int SQLITE_OPEN_CREATE = 0x00000004;
+        public const int SQLITE_OPEN_URI = 0x00000040;
 
         public const int SQLITE_LOCKED = 6;
 
