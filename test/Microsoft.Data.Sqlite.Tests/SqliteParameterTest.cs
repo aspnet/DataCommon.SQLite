@@ -176,6 +176,10 @@ namespace Microsoft.Data.Sqlite
         }
 
         [Fact]
+        public void Bind_works_when_null()
+            => Bind_works(null, DBNull.Value);
+
+        [Fact]
         public void Bind_works_when_byte_array()
         {
             var bytes = new byte[] { 0x7E, 0x57 };
