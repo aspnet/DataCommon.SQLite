@@ -67,6 +67,24 @@ namespace Microsoft.Data.Sqlite
                 connection.BeginTransaction(IsolationLevel.ReadUncommitted);
             }
         }
+        
+        [Theory]
+        [InlineData(SqliteTransactionType.Unspecified)]
+        [InlineData(SqliteTransactionType.Deferred)]
+        [InlineData(SqliteTransactionType.Immediate)]
+        [InlineData(SqliteTransactionType.Exclusive)]
+        public void Begin_transaction_types(SqliteTransactionType type)
+        {
+            using (var connection = new SqliteConnection("Data Source=:memory:"))
+            {
+                connection.Open();
+
+                using (connection.BeginTransaction(type))
+                {
+                    Assert.Equal(type, connection.Transaction.TransactionType);
+                }
+            }
+        }
 
         [Fact]
         public void IsolationLevel_throws_when_completed()
