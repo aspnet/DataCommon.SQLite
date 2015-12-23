@@ -209,21 +209,34 @@ namespace Microsoft.Data.Sqlite
         [Fact]
         public void Bind_works_when_TimeSpan() => Bind_works(new TimeSpan(11, 19, 32), "11:19:32");
 
-        [Fact]
-        public void Bind_throws_when_unknown()
+        private void Bind_throws(SqliteParameter parameter, string message)
         {
             using (var connection = new SqliteConnection("Data Source=:memory:"))
             {
                 var command = connection.CreateCommand();
                 command.CommandText = "SELECT @Parameter;";
-                command.Parameters.AddWithValue("@Parameter", new object());
+                command.Parameters.Add(parameter);
                 connection.Open();
 
                 var ex = Assert.Throws<InvalidOperationException>(() => command.ExecuteScalar());
 
-                Assert.Equal(Strings.FormatUnknownDataType(typeof(object)), ex.Message);
+                Assert.Equal(message, ex.Message);
             }
         }
+
+        [Fact]
+        public void Bind_throws_when_unknown()
+            => Bind_throws(new SqliteParameter("@Parameter", new object()), Strings.FormatUnknownDataType(typeof(object)));
+
+
+        [Fact]
+        public void Bind_throws_when_value_unset()
+            => Bind_throws(new SqliteParameter { ParameterName = "@Parameter" }, Strings.FormatRequiresSet(nameof(SqliteParameter.Value)));
+
+
+        [Fact]
+        public void Bind_throws_when_value_null()
+            => Bind_throws(new SqliteParameter { ParameterName = "@Parameter", Value = null }, Strings.InvalidNullParameter);
 
         [Fact]
         public void Bind_binds_string_values_without_embedded_nulls()

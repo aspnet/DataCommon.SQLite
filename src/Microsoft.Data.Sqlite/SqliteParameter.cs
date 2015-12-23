@@ -24,6 +24,7 @@ namespace Microsoft.Data.Sqlite
         private object _value;
         private Action<Sqlite3StmtHandle, int> _bindAction;
         private bool _bindActionValid;
+        private bool _unset = true;
 
         public SqliteParameter()
         {
@@ -111,6 +112,7 @@ namespace Microsoft.Data.Sqlite
             set
             {
                 _value = value;
+                _unset = false;
                 _bindActionValid = false;
             }
         }
@@ -130,7 +132,7 @@ namespace Microsoft.Data.Sqlite
         {
             if (_parameterName.Length == 0)
             {
-                throw new InvalidOperationException(Strings.FormatRequiresSet("ParameterName"));
+                throw new InvalidOperationException(Strings.FormatRequiresSet(nameof(SqliteParameter.ParameterName)));
             }
 
             var index = NativeMethods.sqlite3_bind_parameter_index(stmt, _parameterName);
@@ -142,7 +144,10 @@ namespace Microsoft.Data.Sqlite
 
             if (_value == null)
             {
-                throw new InvalidOperationException(Strings.FormatRequiresSet("Value"));
+                var message = _unset
+                    ? Strings.FormatRequiresSet(nameof(SqliteParameter.Value))
+                    : Strings.InvalidNullParameter;
+                throw new InvalidOperationException(message);
             }
 
             if (!_bindActionValid)

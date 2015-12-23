@@ -129,6 +129,9 @@
   <data name="DataReaderClosed" xml:space="preserve">
     <value>Invalid attempt to call {operation} when reader is closed.</value>
   </data>
+  <data name="InvalidNullParameter" xml:space="preserve">
+    <value>Parameter value cannot set to 'null'. Use System.DBNull instead.</value>
+  </data>
   <data name="InvalidCacheMode" xml:space="preserve">
     <value>The cache mode '{mode}' is invalid.</value>
   </data>

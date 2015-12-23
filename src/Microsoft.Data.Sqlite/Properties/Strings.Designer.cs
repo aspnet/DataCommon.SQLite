@@ -75,6 +75,22 @@ namespace Microsoft.Data.Sqlite
         }
 
         /// <summary>
+        /// Parameter value cannot set to 'null'. Use System.DBNull instead.
+        /// </summary>
+        internal static string InvalidNullParameter
+        {
+            get { return GetString("InvalidNullParameter"); }
+        }
+
+        /// <summary>
+        /// Parameter value cannot set to 'null'. Use System.DBNull instead.
+        /// </summary>
+        internal static string FormatInvalidNullParameter()
+        {
+            return GetString("InvalidNullParameter");
+        }
+
+        /// <summary>
         /// The cache mode '{mode}' is invalid.
         /// </summary>
         internal static string InvalidCacheMode
