@@ -17,10 +17,11 @@ namespace Microsoft.Data.Sqlite
         private readonly IsolationLevel _isolationLevel;
         private bool _completed;
 
-        internal SqliteTransaction(SqliteConnection connection, IsolationLevel isolationLevel)
+        internal SqliteTransaction(SqliteConnection connection, IsolationLevel isolationLevel, SqliteTransactionType transactionType)
         {
             _connection = connection;
             _isolationLevel = isolationLevel;
+            TransactionType = transactionType;
 
             if (isolationLevel == IsolationLevel.ReadUncommitted)
             {
@@ -40,9 +41,21 @@ namespace Microsoft.Data.Sqlite
             }
 
             // TODO: Register transaction hooks to detect when a user manually completes a transaction created using this API
-            connection.ExecuteNonQuery("BEGIN;");
+            connection.ExecuteNonQuery(GetBeginCommand(transactionType));
         }
 
+        private static string GetBeginCommand(SqliteTransactionType type)
+        {
+            switch (type)
+            {
+                case SqliteTransactionType.Deferred: return "BEGIN DEFERRED;";
+                case SqliteTransactionType.Immediate: return "BEGIN IMMEDIATE;";
+                case SqliteTransactionType.Exclusive: return "BEGIN EXCLUSIVE;";
+                default: return "BEGIN;";
+            };
+        }
+
+        public virtual SqliteTransactionType TransactionType { get; }
         public new virtual SqliteConnection Connection => _connection;
         protected override DbConnection DbConnection => Connection;
 

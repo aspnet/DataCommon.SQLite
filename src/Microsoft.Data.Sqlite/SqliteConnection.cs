@@ -238,10 +238,17 @@ namespace Microsoft.Data.Sqlite
         // NB: Other providers don't set Transaction
         public new virtual SqliteCommand CreateCommand() => new SqliteCommand { Connection = this, Transaction = Transaction };
         protected override DbCommand CreateDbCommand() => CreateCommand();
-        public new virtual SqliteTransaction BeginTransaction() => BeginTransaction(IsolationLevel.Unspecified);
+        public new virtual SqliteTransaction BeginTransaction() 
+            => BeginTransaction(IsolationLevel.Unspecified, SqliteTransactionType.Unspecified);
+        public virtual SqliteTransaction BeginTransaction(SqliteTransactionType transactionType) 
+            => BeginTransaction(IsolationLevel.Unspecified, transactionType);
+            
         protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel) => BeginTransaction(isolationLevel);
 
         public new virtual SqliteTransaction BeginTransaction(IsolationLevel isolationLevel)
+            => BeginTransaction(isolationLevel, SqliteTransactionType.Unspecified);
+        
+        public virtual SqliteTransaction BeginTransaction(IsolationLevel isolationLevel, SqliteTransactionType transactionType)
         {
             if (State != ConnectionState.Open)
             {
@@ -252,7 +259,7 @@ namespace Microsoft.Data.Sqlite
                 throw new InvalidOperationException(Strings.ParallelTransactionsNotSupported);
             }
 
-            return Transaction = new SqliteTransaction(this, isolationLevel);
+            return Transaction = new SqliteTransaction(this, isolationLevel, transactionType);
         }
 
         public override void ChangeDatabase(string databaseName)
