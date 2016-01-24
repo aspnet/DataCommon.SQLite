@@ -93,9 +93,10 @@ namespace Microsoft.Data.Sqlite.Utilities
 
                 var defaultPlatformServices = platformServices.GetProperty("Default").GetValue(null);
                 var application = defaultPlatformServices.GetType().GetProperty("Application").GetValue(defaultPlatformServices);
-                var runtimeFramework = (FrameworkName)application.GetType().GetProperty("RuntimeFramework").GetValue(application);
+                var runtimeFramework = application.GetType().GetProperty("RuntimeFramework").GetValue(application);
+                var runtimeFrameworkIdentifier = (string)runtimeFramework.GetType().GetProperty("Identifier").GetValue(runtimeFramework);
 
-                return runtimeFramework.Identifier == "DNX";
+                return runtimeFrameworkIdentifier == "DNX";
             }
             catch (Exception)
             {
