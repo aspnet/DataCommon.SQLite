@@ -69,7 +69,9 @@ namespace Microsoft.Data.Sqlite.Utilities
             {
                 throw new ArgumentNullException(nameof(dllName));
             }
-            if (IsDNX() || IsMono())
+            // IsMono must be called before IsDNX, because IsDNX is using System.Runtime.Versioning.FrameworkName
+            // type which is missing on Mono Mobile and throws exception instead of returning false
+            if (IsMono() || IsDNX())
             {
                 return true;
             }
