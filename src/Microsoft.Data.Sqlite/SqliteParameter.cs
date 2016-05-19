@@ -271,12 +271,10 @@ namespace Microsoft.Data.Sqlite
         {
             if (double.IsNaN(value))
             {
-                BindText(stmt, index, NaN);
+                throw new InvalidOperationException(Strings.CannotStoreNaN);
             }
-            else
-            {
-                NativeMethods.sqlite3_bind_double(stmt, index, value);
-            }
+
+            NativeMethods.sqlite3_bind_double(stmt, index, value);
         }
 
         private readonly static char[] _parameterPrefixes = { '@', '$', ':' };

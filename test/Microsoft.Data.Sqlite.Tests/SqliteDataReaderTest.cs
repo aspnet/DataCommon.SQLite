@@ -357,7 +357,6 @@ namespace Microsoft.Data.Sqlite
 
         [Theory]
         [InlineData("3", 3f)]
-        [InlineData("'NaN'", float.NaN)]
         [InlineData("9e999", float.PositiveInfinity)]
         [InlineData("9e999", float.PositiveInfinity)]
         public void GetFloat_works(string val, float result) =>
@@ -368,7 +367,6 @@ namespace Microsoft.Data.Sqlite
 
         [Theory]
         [InlineData("2.0", 2.0)]
-        [InlineData("'NaN'", double.NaN)]
         [InlineData("9e999", double.PositiveInfinity)]
         [InlineData("9e999", double.PositiveInfinity)]
         public void GetDouble_works(string val, double result) =>
