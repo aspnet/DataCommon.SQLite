@@ -308,7 +308,7 @@ namespace Microsoft.Data.Sqlite
             {
                 throw new InvalidCastException();
             }
-            
+
             return NativeMethods.sqlite3_column_double(_stmt, ordinal);
         }
 

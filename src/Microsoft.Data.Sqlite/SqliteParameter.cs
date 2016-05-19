@@ -266,7 +266,6 @@ namespace Microsoft.Data.Sqlite
         private static void BindText(Sqlite3StmtHandle stmt, int index, string value) =>
             NativeMethods.sqlite3_bind_text(stmt, index, value, SQLITE_TRANSIENT);
 
-        private const string NaN = "NaN";
         private static void BindDouble(Sqlite3StmtHandle stmt, int index, double value)
         {
             if (double.IsNaN(value))
