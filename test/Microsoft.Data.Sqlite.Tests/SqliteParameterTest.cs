@@ -160,6 +160,12 @@ namespace Microsoft.Data.Sqlite
         [InlineData(1ul, 1L)]
         [InlineData((ushort)1, 1L)]
         [InlineData("测试测试测试", "测试测试测试")]
+        [InlineData(double.NegativeInfinity, double.NegativeInfinity)]
+        [InlineData(double.PositiveInfinity, double.PositiveInfinity)]
+        [InlineData(float.NegativeInfinity, double.NegativeInfinity)]
+        [InlineData(float.PositiveInfinity, double.PositiveInfinity)]
+        [InlineData(double.NaN, "NaN")]
+        [InlineData(float.NaN, "NaN")]
         public void Bind_works(object value, object coercedValue)
         {
             using (var connection = new SqliteConnection("Data Source=:memory:"))

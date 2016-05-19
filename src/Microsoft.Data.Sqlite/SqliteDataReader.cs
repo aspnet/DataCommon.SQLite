@@ -308,6 +308,17 @@ namespace Microsoft.Data.Sqlite
             {
                 throw new InvalidCastException();
             }
+            
+            if (GetSqliteType(ordinal) == SQLITE_TEXT)
+            {
+                var str = NativeMethods.sqlite3_column_text(_stmt, ordinal);
+                double value;
+                if (!double.TryParse(str, out value))
+                {
+                    throw new InvalidCastException();
+                }
+                return value;
+            }
 
             return NativeMethods.sqlite3_column_double(_stmt, ordinal);
         }
