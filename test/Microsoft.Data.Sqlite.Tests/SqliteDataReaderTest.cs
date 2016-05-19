@@ -358,7 +358,7 @@ namespace Microsoft.Data.Sqlite
         [Theory]
         [InlineData("3", 3f)]
         [InlineData("9e999", float.PositiveInfinity)]
-        [InlineData("9e999", float.PositiveInfinity)]
+        [InlineData("-9e999", float.NegativeInfinity)]
         public void GetFloat_works(string val, float result) =>
             GetX_works(
                 "SELECT " + val,
@@ -368,7 +368,7 @@ namespace Microsoft.Data.Sqlite
         [Theory]
         [InlineData("2.0", 2.0)]
         [InlineData("9e999", double.PositiveInfinity)]
-        [InlineData("9e999", double.PositiveInfinity)]
+        [InlineData("-9e999", double.NegativeInfinity)]
         public void GetDouble_works(string val, double result) =>
             GetX_works(
                 "SELECT " + val,
