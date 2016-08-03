@@ -50,7 +50,11 @@ namespace Microsoft.Data.Sqlite.Utilities
             }
 
             var dllPath = Path.Combine(applicationBase, GetArchitecture(), dllName);
-
+			
+			if (!File.Exists(dllPath)) {
+				dllPath = Path.Combine(applicationBase, "bin", GetArchitecture(), dllName);
+			}
+			
             if (!File.Exists(dllPath))
             {
                 return false;
