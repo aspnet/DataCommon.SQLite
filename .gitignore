@@ -24,4 +24,5 @@ launchSettings.json
 *.project.lock.json
 *.nuget.props
 *.nuget.targets
+*.userprefs
 sqlite3.dll
