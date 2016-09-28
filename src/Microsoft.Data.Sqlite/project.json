@@ -21,7 +21,7 @@
     ]
   },
   "dependencies": {
-    "SQLite": "3.12.2",
+    "SQLitePCLRaw.bundle_e_sqlite3": "1.1.0-pre20160928150051",
     "StyleCop.Analyzers": {
       "version": "1.0.0",
       "type": "build"

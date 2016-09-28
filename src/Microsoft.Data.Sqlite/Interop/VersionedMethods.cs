@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using NativeMethods = SQLitePCL.raw;
+using Sqlite3Handle = SQLitePCL.sqlite3;
 
 namespace Microsoft.Data.Sqlite.Interop
 {
@@ -33,7 +35,7 @@ namespace Microsoft.Data.Sqlite.Interop
         public static string GetErrorString(int rc)
             => _strategy.GetErrorString(rc);
 
-        public static int Close(IntPtr db)
+        public static int Close(Sqlite3Handle db)
            => _strategy.Close(db);
 
         public static string GetFilename(Sqlite3Handle db, string zDbName)
@@ -47,7 +49,7 @@ namespace Microsoft.Data.Sqlite.Interop
 
         private class Strategy3_7_14 : Strategy3_7_10
         {
-            public override int Close(IntPtr db)
+            public override int Close(Sqlite3Handle db)
                 => NativeMethods.sqlite3_close_v2(db);
         }
 
@@ -62,7 +64,7 @@ namespace Microsoft.Data.Sqlite.Interop
             public virtual string GetErrorString(int rc)
                 => Strings.DefaultNativeError;
 
-            public virtual int Close(IntPtr db)
+            public virtual int Close(Sqlite3Handle db)
                 => NativeMethods.sqlite3_close(db);
 
             public virtual string GetFilename(Sqlite3Handle db, string zDbName)

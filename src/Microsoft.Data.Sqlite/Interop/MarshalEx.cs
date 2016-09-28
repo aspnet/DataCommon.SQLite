@@ -7,6 +7,10 @@ using System.Text;
 
 using static Microsoft.Data.Sqlite.Interop.Constants;
 
+using NativeMethods = SQLitePCL.raw;
+using Sqlite3Handle = SQLitePCL.sqlite3;
+using Sqlite3StmtHandle = SQLitePCL.sqlite3_stmt;
+
 namespace Microsoft.Data.Sqlite.Interop
 {
     internal static class MarshalEx
@@ -62,7 +66,7 @@ namespace Microsoft.Data.Sqlite.Interop
                 return;
             }
 
-            var message = db == null || db.IsInvalid
+            var message = db == null || db.IsInvalid()
                 ? VersionedMethods.GetErrorString(rc)
                 : NativeMethods.sqlite3_errmsg(db);
 

@@ -7,6 +7,9 @@ using System.Data.Common;
 using System.Globalization;
 using Microsoft.Data.Sqlite.Interop;
 using Microsoft.Data.Sqlite.Utilities;
+using NativeMethods = SQLitePCL.raw;
+using Sqlite3Handle = SQLitePCL.sqlite3;
+using Sqlite3StmtHandle = SQLitePCL.sqlite3_stmt;
 
 using static Microsoft.Data.Sqlite.Interop.Constants;
 
@@ -338,10 +341,10 @@ namespace Microsoft.Data.Sqlite
         }
 
         private static void BindBlob(Sqlite3StmtHandle stmt, int index, byte[] value)
-            => NativeMethods.sqlite3_bind_blob(stmt, index, value, value.Length, SQLITE_TRANSIENT);
+            => NativeMethods.sqlite3_bind_blob(stmt, index, value);
 
         private static void BindText(Sqlite3StmtHandle stmt, int index, string value)
-            => NativeMethods.sqlite3_bind_text(stmt, index, value, SQLITE_TRANSIENT);
+            => NativeMethods.sqlite3_bind_text(stmt, index, value);
 
         private static void BindDouble(Sqlite3StmtHandle stmt, int index, double value)
         {

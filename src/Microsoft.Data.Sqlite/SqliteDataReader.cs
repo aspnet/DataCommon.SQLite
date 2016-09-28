@@ -13,6 +13,9 @@ using static Microsoft.Data.Sqlite.Interop.Constants;
 #if NET451
 using System.Data;
 #endif
+using Sqlite3Handle = SQLitePCL.sqlite3;
+using Sqlite3StmtHandle = SQLitePCL.sqlite3_stmt;
+using NativeMethods = SQLitePCL.raw;
 
 namespace Microsoft.Data.Sqlite
 {
@@ -79,7 +82,7 @@ namespace Microsoft.Data.Sqlite
         /// <value>A handle to underlying prepared statement.</value>
         /// <seealso href="http://sqlite.org/c3ref/stmt.html">Prepared Statement Object</seealso>
         public virtual IntPtr Handle
-            => _stmt?.DangerousGetHandle() ?? IntPtr.Zero;
+            => _stmt?.ptr ?? IntPtr.Zero;
 
         /// <summary>
         /// Gets a value indicating whether the data reader contains any rows.

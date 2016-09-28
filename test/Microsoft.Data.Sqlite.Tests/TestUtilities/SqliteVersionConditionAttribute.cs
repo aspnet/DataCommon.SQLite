@@ -4,6 +4,9 @@
 using System;
 using Microsoft.Data.Sqlite.Interop;
 using Microsoft.AspNetCore.Testing.xunit;
+using NativeMethods = SQLitePCL.raw;
+using Sqlite3Handle = SQLitePCL.sqlite3;
+using Sqlite3StmtHandle = SQLitePCL.sqlite3_stmt;
 
 namespace Microsoft.Data.Sqlite
 {

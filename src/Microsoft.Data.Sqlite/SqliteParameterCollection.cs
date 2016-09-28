@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
 using Microsoft.Data.Sqlite.Interop;
+using Sqlite3StmtHandle = SQLitePCL.sqlite3_stmt;
 
 namespace Microsoft.Data.Sqlite
 {
