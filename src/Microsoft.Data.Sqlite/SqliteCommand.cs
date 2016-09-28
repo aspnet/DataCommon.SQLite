@@ -11,6 +11,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Data.Sqlite.Interop;
 using static Microsoft.Data.Sqlite.Interop.Constants;
+using NativeMethods = SQLitePCL.raw;
+using Sqlite3Handle = SQLitePCL.sqlite3;
+using Sqlite3StmtHandle = SQLitePCL.sqlite3_stmt;
 
 namespace Microsoft.Data.Sqlite
 {
@@ -242,7 +245,7 @@ namespace Microsoft.Data.Sqlite
                 MarshalEx.ThrowExceptionForRC(rc, Connection.DbHandle);
 
                 // Statement was empty, white space, or a comment
-                if (stmt.IsInvalid)
+                if (stmt.IsInvalid())
                 {
                     if (!string.IsNullOrEmpty(tail))
                     {

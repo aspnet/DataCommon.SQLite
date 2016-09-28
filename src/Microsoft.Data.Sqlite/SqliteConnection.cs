@@ -7,6 +7,9 @@ using System.Data.Common;
 using System.Diagnostics;
 using System.IO;
 using Microsoft.Data.Sqlite.Interop;
+using Sqlite3Handle = SQLitePCL.sqlite3;
+using Sqlite3StmtHandle = SQLitePCL.sqlite3_stmt;
+using NativeMethods = SQLitePCL.raw;
 
 #if !NET451
 using Microsoft.Data.Sqlite.Utilities;
@@ -16,11 +19,30 @@ using static Microsoft.Data.Sqlite.Interop.Constants;
 
 namespace Microsoft.Data.Sqlite
 {
+    static class sqlitepclraw_ex
+    {
+        public static bool IsInvalid(this Sqlite3Handle db)
+        {
+            return db.ptr == IntPtr.Zero;
+        }
+
+        public static bool IsInvalid(this Sqlite3StmtHandle db)
+        {
+            return db.ptr == IntPtr.Zero;
+        }
+
+    }
+
     /// <summary>
     /// Represents a connection to a SQLite database.
     /// </summary>
     public partial class SqliteConnection : DbConnection
     {
+        static SqliteConnection()
+        {
+            SQLitePCL.Batteries_V2.Init();
+        }
+
         private const string MainDatabaseName = "main";
 
         private string _connectionString;
@@ -53,7 +75,7 @@ namespace Microsoft.Data.Sqlite
         /// <value>A handle to underlying database connection.</value>
         /// <seealso href="http://sqlite.org/c3ref/sqlite3.html">Database Connection Handle</seealso>
         public virtual IntPtr Handle
-            => _db?.DangerousGetHandle() ?? IntPtr.Zero;
+            => _db?.ptr ?? IntPtr.Zero;
 
         /// <summary>
         /// Gets or sets a string used to open the connection.
@@ -229,7 +251,7 @@ namespace Microsoft.Data.Sqlite
         public override void Close()
         {
             if (_db == null
-                || _db.IsInvalid)
+                || _db.IsInvalid())
             {
                 return;
             }
@@ -330,7 +352,7 @@ namespace Microsoft.Data.Sqlite
         public virtual void EnableExtensions(bool enable = true)
         {
             if (_db == null
-                || _db.IsInvalid)
+                || _db.IsInvalid())
             {
                 throw new InvalidOperationException(Strings.CallRequiresOpenConnection(nameof(EnableExtensions)));
             }
