@@ -311,6 +311,28 @@ namespace Microsoft.Data.Sqlite
             }
         }
 
+        [Theory]
+        [InlineData("nvarchar(10)", typeof(string))]
+        [InlineData("NVARCHAR(10)", typeof(string))]
+        [InlineData("decimal(5,2)", typeof(decimal))]
+        [InlineData("numeric(5,2)", typeof(decimal))]
+        [InlineData("Integer8", typeof(sbyte))]
+        [InlineData("uniqueidentifier", typeof(Guid))]
+        [InlineData("UnknownType", typeof(int))]
+        public void GetFieldTypeFromTable_works(string columnType, Type expected)
+        {
+            using (var connection = new SqliteConnection("Data Source=:memory:"))
+            {
+                connection.Open();
+
+                connection.ExecuteNonQuery($"CREATE TABLE T1 (A1 {columnType});");
+                using (var reader = connection.ExecuteReader("SELECT A1 FROM T1;"))
+                {
+                    Assert.Equal(expected, reader.GetFieldType(0));
+                }
+            }
+        }
+
         [Fact]
         public void GetFieldType_throws_when_ordinal_out_of_range()
         {
@@ -501,6 +523,32 @@ namespace Microsoft.Data.Sqlite
 
                     Assert.True(hasData);
                     Assert.Equal(expected, reader.GetValue(0));
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData("bool", "1", true, typeof(bool))]
+        [InlineData("nvarchar", "'abcdef'", "abcdef", typeof(string))]
+        [InlineData("INT16", "35", (short)35, typeof(short))]
+        [InlineData("CURRENCY", "34.78", 34.78, typeof(decimal))]
+        [InlineData("UnknownType", "35", (long)35, typeof(long))]
+        [InlineData("DateTime", "'2015-03-05'", "2015-03-05 00:00:00", typeof(DateTime))]
+        [InlineData("Single", "35", (Single)35, typeof(Single))]
+        public void GetValue_FromTable_works(string columnType, string data, object expected, Type expectedType)
+        {
+            using (var connection = new SqliteConnection("Data Source=:memory:"))
+            {
+                connection.Open();
+                connection.ExecuteNonQuery($"CREATE TABLE T1 (A1 {columnType});");
+                connection.ExecuteNonQuery($"INSERT INTO T1 VALUES ({data});");
+                using (var reader = connection.ExecuteReader("SELECT A1 FROM T1"))
+                {
+                    var hasData = reader.Read();
+
+                    Assert.True(hasData);
+                    var converted = Convert.ChangeType(expected, expectedType);
+                    Assert.Equal(converted, reader.GetValue(0));
                 }
             }
         }

@@ -324,6 +324,15 @@ namespace Microsoft.Data.Sqlite
                 throw new InvalidOperationException(Strings.DataReaderClosed("GetFieldType"));
             }
 
+            var typeName = NativeMethods.sqlite3_column_decltype(_stmt, ordinal);
+            if (typeName != null)
+            {
+                var returnType = SqliteConvert.TypeNameToType(typeName);
+                if (returnType != null)
+                {
+                    return returnType;
+                }
+            }
             var sqliteType = GetSqliteType(ordinal);
             switch (sqliteType)
             {
@@ -534,29 +543,34 @@ namespace Microsoft.Data.Sqlite
         public override T GetFieldValue<T>(int ordinal)
         {
             var type = typeof(T).UnwrapNullableType().UnwrapEnumType();
+            return (T)GetFieldValue(type, ordinal);
+        }
+
+        public object GetFieldValue(Type type, int ordinal)
+        {
             if (type == typeof(bool))
             {
-                return (T)(object)GetBoolean(ordinal);
+                return (object)GetBoolean(ordinal);
             }
             if (type == typeof(byte))
             {
-                return (T)(object)GetByte(ordinal);
+                return (object)GetByte(ordinal);
             }
             if (type == typeof(byte[]))
             {
-                return (T)(object)GetBlob(ordinal);
+                return (object)GetBlob(ordinal);
             }
             if (type == typeof(char))
             {
-                return (T)(object)GetChar(ordinal);
+                return (object)GetChar(ordinal);
             }
             if (type == typeof(DateTime))
             {
-                return (T)(object)GetDateTime(ordinal);
+                return (object)GetDateTime(ordinal);
             }
             if (type == typeof(DateTimeOffset))
             {
-                return (T)(object)DateTimeOffset.Parse(GetString(ordinal));
+                return (object)DateTimeOffset.Parse(GetString(ordinal));
             }
             if (type == typeof(DBNull))
             {
@@ -565,62 +579,62 @@ namespace Microsoft.Data.Sqlite
                     throw new InvalidOperationException(Strings.NoData);
                 }
 
-                return (T)(object)DBNull.Value;
+                return (object)DBNull.Value;
             }
             if (type == typeof(decimal))
             {
-                return (T)(object)GetDecimal(ordinal);
+                return (object)GetDecimal(ordinal);
             }
             if (type == typeof(double))
             {
-                return (T)(object)GetDouble(ordinal);
+                return (object)GetDouble(ordinal);
             }
             if (type == typeof(float))
             {
-                return (T)(object)GetFloat(ordinal);
+                return (object)GetFloat(ordinal);
             }
             if (type == typeof(Guid))
             {
-                return (T)(object)GetGuid(ordinal);
+                return (object)GetGuid(ordinal);
             }
             if (type == typeof(int))
             {
-                return (T)(object)GetInt32(ordinal);
+                return (object)GetInt32(ordinal);
             }
             if (type == typeof(long))
             {
-                return (T)(object)GetInt64(ordinal);
+                return (object)GetInt64(ordinal);
             }
             if (type == typeof(sbyte))
             {
-                return (T)(object)((sbyte)GetInt64(ordinal));
+                return (object)((sbyte)GetInt64(ordinal));
             }
             if (type == typeof(short))
             {
-                return (T)(object)GetInt16(ordinal);
+                return (object)GetInt16(ordinal);
             }
             if (type == typeof(string))
             {
-                return (T)(object)GetString(ordinal);
+                return (object)GetString(ordinal);
             }
             if (type == typeof(TimeSpan))
             {
-                return (T)(object)TimeSpan.Parse(GetString(ordinal));
+                return (object)TimeSpan.Parse(GetString(ordinal));
             }
             if (type == typeof(uint))
             {
-                return (T)(object)((uint)GetInt64(ordinal));
+                return (object)((uint)GetInt64(ordinal));
             }
             if (type == typeof(ulong))
             {
-                return (T)(object)((ulong)GetInt64(ordinal));
+                return (object)((ulong)GetInt64(ordinal));
             }
             if (type == typeof(ushort))
             {
-                return (T)(object)((ushort)GetInt64(ordinal));
+                return (object)((ushort)GetInt64(ordinal));
             }
-
-            return base.GetFieldValue<T>(ordinal);
+            throw new ArgumentException();
+            //return base.GetFieldValue<T>(ordinal);
         }
 
         /// <summary>
@@ -634,8 +648,23 @@ namespace Microsoft.Data.Sqlite
             {
                 throw new InvalidOperationException(Strings.DataReaderClosed("GetValue"));
             }
-
             var sqliteType = GetSqliteType(ordinal);
+            if (sqliteType == SQLITE_NULL)
+            {
+                if (!_stepped || _done)
+                {
+                    throw new InvalidOperationException(Strings.NoData);
+                }
+
+                return DBNull.Value;
+            }
+
+            var returnType = GetFieldType(ordinal);
+            if (returnType != null)
+            {
+                return GetFieldValue(returnType, ordinal);
+            }
+            
             switch (sqliteType)
             {
                 case SQLITE_INTEGER:
@@ -649,14 +678,6 @@ namespace Microsoft.Data.Sqlite
 
                 case SQLITE_BLOB:
                     return GetBlob(ordinal);
-
-                case SQLITE_NULL:
-                    if (!_stepped || _done)
-                    {
-                        throw new InvalidOperationException(Strings.NoData);
-                    }
-
-                    return DBNull.Value;
 
                 default:
                     Debug.Fail("Unexpected column type: " + sqliteType);
