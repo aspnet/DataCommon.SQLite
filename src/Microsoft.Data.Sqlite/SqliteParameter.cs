@@ -24,6 +24,7 @@ namespace Microsoft.Data.Sqlite
         private string _parameterName = string.Empty;
         private object _value;
         private Action<Sqlite3StmtHandle, int> _bindAction;
+        private bool _unset = true;
         private bool _bindActionValid;
 
         /// <summary>
@@ -184,6 +185,7 @@ namespace Microsoft.Data.Sqlite
             set
             {
                 _value = value;
+                _unset = false;
                 _bindActionValid = false;
             }
         }
@@ -217,14 +219,17 @@ namespace Microsoft.Data.Sqlite
                 return false;
             }
 
-            if (_value == null)
+            if (_unset)
             {
                 throw new InvalidOperationException(Strings.RequiresSet("Value"));
             }
 
             if (!_bindActionValid)
             {
-                var type = Value.GetType().UnwrapNullableType().UnwrapEnumType();
+                var type = Value == null
+                    ? typeof(DBNull)
+                    : Value.GetType().UnwrapNullableType().UnwrapEnumType();
+
                 if (type == typeof(bool))
                 {
                     var value = (bool)_value ? 1L : 0;
