@@ -45,6 +45,10 @@ namespace Microsoft.Data.Sqlite
             var ex = Assert.Throws<ArgumentException>(() => new SqliteCommand().CommandType = CommandType.StoredProcedure);
 
             Assert.Equal(Resources.InvalidCommandType(CommandType.StoredProcedure), ex.Message);
+
+            ex = Assert.Throws<ArgumentException>(() => new SqliteCommand().CommandType = CommandType.TableDirect);
+
+            Assert.Equal(Strings.InvalidCommandType(CommandType.TableDirect), ex.Message);
         }
 
         [Fact]
@@ -65,9 +69,49 @@ namespace Microsoft.Data.Sqlite
         }
 
         [Fact]
-        public void Prepare_does_nothing()
+        public void Prepare_throws_when_no_connection()
         {
-            new SqliteCommand().Prepare();
+            var ex = Assert.Throws<InvalidOperationException>(() => new SqliteCommand().Prepare());
+
+            Assert.Equal(Strings.CallRequiresOpenConnection("Prepare"), ex.Message);
+        }
+
+        [Fact]
+        public void Prepare_throws_when_connection_closed()
+        {
+            using (var connection = new SqliteConnection("Data Source=:memory:"))
+            {
+                var ex = Assert.Throws<InvalidOperationException>(() => connection.CreateCommand().Prepare());
+
+                Assert.Equal(Strings.CallRequiresOpenConnection("Prepare"), ex.Message);
+            }
+        }
+
+        [Fact]
+        public void Prepare_throws_when_no_command_text()
+        {
+            using (var connection = new SqliteConnection("Data Source=:memory:"))
+            {
+                connection.Open();
+
+                var ex = Assert.Throws<InvalidOperationException>(() => connection.CreateCommand().Prepare());
+
+                Assert.Equal(Strings.CallRequiresSetCommandText("Prepare"), ex.Message);
+            }
+        }
+
+        [Fact]
+        public void Prepare_throws_when_command_text_contains_dependent_commands()
+        {
+            using (var connection = new SqliteConnection("Data Source=:memory:"))
+            {
+                connection.Open();
+                var command = connection.CreateCommand();
+                command.CommandText = "CREATE TABLE Data (Value); INSERT INTO Data VALUES (0);";
+                var ex = Assert.Throws<SqliteException>(() => command.Prepare());
+
+                Assert.Equal("SQLite Error 1: 'no such table: Data'.", ex.Message);
+            }
         }
 
         [Fact]
@@ -256,6 +300,24 @@ namespace Microsoft.Data.Sqlite
                 connection.Open();
 
                 Assert.Equal(1L, command.ExecuteScalar());
+            }
+        }
+
+        [Fact]
+        public void ExecuteReader_reuse_statement()
+        {
+            using (var connection = new SqliteConnection("Data Source=:memory:"))
+            {
+                connection.Open();
+                var command = connection.CreateCommand();
+                command.CommandText = "SELECT @Parameter;";
+                command.Prepare();
+                command.Parameters.AddWithValue("@Parameter", 1);
+
+                Assert.Equal(1L, command.ExecuteScalar());
+                
+                command.Parameters["@Parameter"].Value = 2;
+                Assert.Equal(2L, command.ExecuteScalar());
             }
         }
 

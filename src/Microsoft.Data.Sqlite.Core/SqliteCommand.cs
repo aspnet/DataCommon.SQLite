@@ -21,6 +21,8 @@ namespace Microsoft.Data.Sqlite
     {
         private readonly Lazy<SqliteParameterCollection> _parameters = new Lazy<SqliteParameterCollection>(
             () => new SqliteParameterCollection());
+        private readonly List<sqlite3_stmt> _preparedStatements = new List<sqlite3_stmt>();
+        private string _commandText;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteCommand" /> class.
@@ -82,7 +84,18 @@ namespace Microsoft.Data.Sqlite
         /// Gets or sets the SQL to execute against the database.
         /// </summary>
         /// <value>The SQL to execute against the database.</value>
-        public override string CommandText { get; set; }
+        public override string CommandText
+        {
+            get { return _commandText; }
+            set
+            {
+                if (!value.Equals(_commandText))
+                {
+                    Connection?.DisposePreparedStatements(_preparedStatements);
+                    _commandText = value;
+                }
+            }
+        }
 
         /// <summary>
         /// Gets or sets the connection used by the command.
@@ -152,6 +165,22 @@ namespace Microsoft.Data.Sqlite
         public override UpdateRowSource UpdatedRowSource { get; set; }
 
         /// <summary>
+        /// Releases any resources used by the connection and closes it.
+        /// </summary>
+        /// <param name="disposing">
+        /// true to release managed and unmanaged resources; false to release only unmanaged resources.
+        /// </param>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                Connection?.DisposePreparedStatements(_preparedStatements);
+            }
+
+            base.Dispose(disposing);
+        }
+
+        /// <summary>
         /// Creates a new parameter.
         /// </summary>
         /// <returns>The new parameter.</returns>
@@ -170,6 +199,21 @@ namespace Microsoft.Data.Sqlite
         /// </summary>
         public override void Prepare()
         {
+            if (Connection == null
+                || Connection.State != ConnectionState.Open)
+            {
+                throw new InvalidOperationException(Strings.CallRequiresOpenConnection("Prepare"));
+            }
+
+            if (string.IsNullOrEmpty(CommandText))
+            {
+                throw new InvalidOperationException(Strings.CallRequiresSetCommandText("Prepare"));
+            }
+
+            if (_preparedStatements.Count == 0)
+            {
+                Connection.GetPreparedStatements(CommandText, _preparedStatements);
+            }
         }
 
         /// <summary>
@@ -224,27 +268,39 @@ namespace Microsoft.Data.Sqlite
 
             var hasChanges = false;
             var changes = 0;
+            int rc;
             var stmts = new Queue<Tuple<sqlite3_stmt, bool>>();
-            var tail = CommandText;
+            sqlite3_stmt stmt;
+
+            int count = 0;
+            string tail = (_preparedStatements.Count == 0) ? CommandText : null;
 
             do
             {
-                var rc = raw.sqlite3_prepare_v2(
-                        Connection.Handle,
-                        tail,
-                        out var stmt,
-                        out tail);
-                SqliteException.ThrowExceptionForRC(rc, Connection.Handle);
-
-                // Statement was empty, white space, or a comment
-                if (stmt.ptr == IntPtr.Zero)
+                if (tail != null)
                 {
-                    if (!string.IsNullOrEmpty(tail))
+                    (stmt, tail) = Connection.GetPreparedStatement(tail);
+
+                    // Statement was empty, white space, or a comment
+                    if (stmt.ptr == IntPtr.Zero)
                     {
-                        continue;
+                        if (!string.IsNullOrEmpty(tail) || (count < _preparedStatements.Count))
+                        {
+                            continue;
+                        }
+
+                        break;
                     }
 
-                    break;
+                    _preparedStatements.Add(stmt);
+                    count++;
+                }
+                else
+                {
+                    stmt = _preparedStatements[count];
+                    count++;
+
+                    raw.sqlite3_reset(stmt);
                 }
 
                 var boundParams = 0;
@@ -295,7 +351,6 @@ namespace Microsoft.Data.Sqlite
                 }
                 catch
                 {
-                    stmt.Dispose();
                     throw;
                 }
 
@@ -309,10 +364,9 @@ namespace Microsoft.Data.Sqlite
                 {
                     hasChanges = true;
                     changes += raw.sqlite3_changes(Connection.Handle);
-                    stmt.Dispose();
                 }
             }
-            while (!string.IsNullOrEmpty(tail));
+            while (!string.IsNullOrEmpty(tail) || (count < _preparedStatements.Count));
 
             var closeConnection = (behavior & CommandBehavior.CloseConnection) != 0;
 

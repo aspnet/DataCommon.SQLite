@@ -151,8 +151,6 @@ namespace Microsoft.Data.Sqlite
                 return false;
             }
 
-            _stmt.Dispose();
-
             var tuple = _stmtQueue.Dequeue();
             _stmt = tuple.Item1;
             _hasRows = tuple.Item2;
@@ -181,17 +179,6 @@ namespace Microsoft.Data.Sqlite
             if (!disposing)
             {
                 return;
-            }
-
-            if (_stmt != null)
-            {
-                _stmt.Dispose();
-                _stmt = null;
-            }
-
-            while (_stmtQueue.Count != 0)
-            {
-                _stmtQueue.Dequeue().Item1.Dispose();
             }
 
             _closed = true;
