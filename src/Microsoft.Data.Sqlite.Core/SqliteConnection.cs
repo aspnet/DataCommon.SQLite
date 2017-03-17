@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Diagnostics;
@@ -21,6 +22,7 @@ namespace Microsoft.Data.Sqlite
     public partial class SqliteConnection : DbConnection
     {
         private const string MainDatabaseName = "main";
+        private readonly List<sqlite3_stmt> _preparedStatements = new List<sqlite3_stmt>();
 
         private string _connectionString;
         private ConnectionState _state;
@@ -225,6 +227,7 @@ namespace Microsoft.Data.Sqlite
             }
 
             Transaction?.Dispose();
+            DisposePreparedStatements(_preparedStatements);
 
             var rc = raw.sqlite3_close(_db);
 #if DEBUG
@@ -357,6 +360,62 @@ namespace Microsoft.Data.Sqlite
 
             var rc = raw.sqlite3_enable_load_extension(_db, enable ? 1 : 0);
             SqliteException.ThrowExceptionForRC(rc, _db);
+        }
+
+        internal (sqlite3_stmt stmt, string tail) GetPreparedStatement(string commandText)
+        {
+            var tail = commandText;
+            var rc = raw.sqlite3_prepare_v2(
+                _db,
+                tail,
+                out sqlite3_stmt stmt,
+                out tail);
+            SqliteException.ThrowExceptionForRC(rc, _db);
+
+            if (stmt.ptr != IntPtr.Zero)
+            {
+                _preparedStatements.Add(stmt);
+            }
+
+            return (stmt, tail);
+        }
+
+        internal void GetPreparedStatements(string commandText, ICollection<sqlite3_stmt> stmts)
+        {
+            var tail = commandText;
+            sqlite3_stmt stmt;
+            do
+            {
+                (stmt, tail) = GetPreparedStatement(tail);
+
+                // Statement was empty, white space, or a comment
+                if (stmt.ptr == IntPtr.Zero)
+                {
+                    if (!string.IsNullOrEmpty(tail))
+                    {
+                        continue;
+                    }
+
+                    break;
+                }
+
+                stmts.Add(stmt);
+            }
+            while (!string.IsNullOrEmpty(tail));
+        }
+
+        internal void DisposePreparedStatements(IList<sqlite3_stmt> stmts)
+        {
+            // stmts could be _preparedStatements, so we have to traverse
+            // the list from the back to be able to remove the entries
+            for (int i = stmts.Count - 1; i >= 0; i--)
+            {
+                sqlite3_stmt stmt = stmts[i];
+                _preparedStatements.Remove(stmt);
+                stmt.Dispose();
+            }
+
+            stmts.Clear();
         }
     }
 }

@@ -150,8 +150,6 @@ namespace Microsoft.Data.Sqlite
                 return false;
             }
 
-            _stmt.Dispose();
-
             (_stmt, _hasRows) = _stmtQueue.Dequeue();
             _stepped = false;
             _done = false;
@@ -175,17 +173,6 @@ namespace Microsoft.Data.Sqlite
         /// </param>
         protected override void Dispose(bool disposing)
         {
-            if (_stmt != null)
-            {
-                _stmt.Dispose();
-                _stmt = null;
-            }
-
-            while (_stmtQueue.Count != 0)
-            {
-                _stmtQueue.Dequeue().stmt.Dispose();
-            }
-
             if (!disposing)
             {
                 return;
