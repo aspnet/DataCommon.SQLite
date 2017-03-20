@@ -22,6 +22,7 @@ namespace Microsoft.Data.Sqlite
         private readonly Lazy<SqliteParameterCollection> _parameters = new Lazy<SqliteParameterCollection>(
             () => new SqliteParameterCollection());
         private readonly List<sqlite3_stmt> _preparedStatements = new List<sqlite3_stmt>();
+        private SqliteConnection _connection;
         private string _commandText;
 
         /// <summary>
@@ -95,7 +96,18 @@ namespace Microsoft.Data.Sqlite
         /// Gets or sets the connection used by the command.
         /// </summary>
         /// <value>The connection used by the command.</value>
-        public new virtual SqliteConnection Connection { get; set; }
+        public new virtual SqliteConnection Connection
+        {
+            get { return _connection; }
+            set
+            {
+                if (!value.Equals(_connection))
+                {
+                    _connection?.DisposePreparedStatements(_preparedStatements);
+                    _connection = value;
+                }
+            }
+        }
 
         /// <summary>
         /// Gets or sets the connection used by the command. Must be a <see cref="SqliteConnection" />.
@@ -196,12 +208,12 @@ namespace Microsoft.Data.Sqlite
             if (Connection == null
                 || Connection.State != ConnectionState.Open)
             {
-                throw new InvalidOperationException(Strings.CallRequiresOpenConnection("Prepare"));
+                throw new InvalidOperationException(Resources.CallRequiresOpenConnection("Prepare"));
             }
 
             if (string.IsNullOrEmpty(CommandText))
             {
-                throw new InvalidOperationException(Strings.CallRequiresSetCommandText("Prepare"));
+                throw new InvalidOperationException(Resources.CallRequiresSetCommandText("Prepare"));
             }
 
             if (_preparedStatements.Count == 0)
