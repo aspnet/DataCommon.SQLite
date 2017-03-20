@@ -48,7 +48,7 @@ namespace Microsoft.Data.Sqlite
 
             ex = Assert.Throws<ArgumentException>(() => new SqliteCommand().CommandType = CommandType.TableDirect);
 
-            Assert.Equal(Strings.InvalidCommandType(CommandType.TableDirect), ex.Message);
+            Assert.Equal(Resources.InvalidCommandType(CommandType.TableDirect), ex.Message);
         }
 
         [Fact]
@@ -73,7 +73,7 @@ namespace Microsoft.Data.Sqlite
         {
             var ex = Assert.Throws<InvalidOperationException>(() => new SqliteCommand().Prepare());
 
-            Assert.Equal(Strings.CallRequiresOpenConnection("Prepare"), ex.Message);
+            Assert.Equal(Resources.CallRequiresOpenConnection("Prepare"), ex.Message);
         }
 
         [Fact]
@@ -83,7 +83,7 @@ namespace Microsoft.Data.Sqlite
             {
                 var ex = Assert.Throws<InvalidOperationException>(() => connection.CreateCommand().Prepare());
 
-                Assert.Equal(Strings.CallRequiresOpenConnection("Prepare"), ex.Message);
+                Assert.Equal(Resources.CallRequiresOpenConnection("Prepare"), ex.Message);
             }
         }
 
@@ -96,7 +96,7 @@ namespace Microsoft.Data.Sqlite
 
                 var ex = Assert.Throws<InvalidOperationException>(() => connection.CreateCommand().Prepare());
 
-                Assert.Equal(Strings.CallRequiresSetCommandText("Prepare"), ex.Message);
+                Assert.Equal(Resources.CallRequiresSetCommandText("Prepare"), ex.Message);
             }
         }
 
@@ -208,6 +208,19 @@ namespace Microsoft.Data.Sqlite
                 var ex = Assert.Throws<InvalidOperationException>(() => connection.CreateCommand().ExecuteScalar());
 
                 Assert.Equal(Resources.CallRequiresSetCommandText("ExecuteScalar"), ex.Message);
+            }
+        }
+
+        [Fact]
+        public void ExecuteScalar_processes_dependent_commands()
+        {
+            using (var connection = new SqliteConnection("Data Source=:memory:"))
+            {
+                connection.Open();
+                var command = connection.CreateCommand();
+                command.CommandText = "CREATE TABLE Data (Value); INSERT INTO Data VALUES (42); SELECT Value FROM Data LIMIT 1;";
+
+                Assert.Equal(42L, command.ExecuteScalar());
             }
         }
 
