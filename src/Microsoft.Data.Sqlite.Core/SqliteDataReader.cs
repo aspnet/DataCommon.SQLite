@@ -384,7 +384,18 @@ namespace Microsoft.Data.Sqlite
         /// <param name="ordinal">The zero-based column ordinal.</param>
         /// <returns>The value of the column.</returns>
         public override DateTime GetDateTime(int ordinal)
-            => DateTime.Parse(GetString(ordinal), CultureInfo.InvariantCulture);
+        {
+            var sqliteType = GetSqliteType(ordinal);
+            switch (sqliteType)
+            {
+                case raw.SQLITE_TEXT:
+                    return DateTime.Parse(GetString(ordinal), CultureInfo.InvariantCulture);
+                case raw.SQLITE_FLOAT:
+                    return DateTimeConversion.FromJulianDate(GetDouble(ordinal));
+                default:
+                    throw new InvalidCastException();
+            }
+        }
 
         /// <summary>
         /// Gets the value of the specified column as a <see cref="decimal" />.

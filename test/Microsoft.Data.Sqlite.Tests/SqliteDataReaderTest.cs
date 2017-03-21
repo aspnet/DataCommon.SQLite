@@ -100,11 +100,18 @@ namespace Microsoft.Data.Sqlite
         }
 
         [Fact]
-        public void GetDateTime_works()
+        public void GetDateTime_works_with_text()
             => GetX_works(
                 "SELECT '2014-04-15 10:47:16';",
                 r => r.GetDateTime(0),
                 new DateTime(2014, 4, 15, 10, 47, 16));
+
+        [Fact]
+        public void GetDateTime_works_with_real()
+            => GetX_works(
+                "SELECT julianday('2013-10-07 08:23:19.120');",
+                r => r.GetDateTime(0),
+                new DateTime(2013,10,7,8,23,19,120));
 
         [Theory]
         [InlineData("SELECT 1;", "INTEGER")]
