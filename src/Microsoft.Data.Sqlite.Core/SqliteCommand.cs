@@ -65,6 +65,14 @@ namespace Microsoft.Data.Sqlite
         }
 
         /// <summary>
+        /// Finalizes an instance of the <see cref="SqliteCommand"/> class.
+        /// </summary>
+        ~SqliteCommand()
+        {
+            Connection?.DisposePreparedStatements(_preparedStatements);
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating how <see cref="CommandText" /> is interpreted. Only
         /// <see cref="CommandType.Text" /> is supported.
         /// </summary>
@@ -382,7 +390,7 @@ namespace Microsoft.Data.Sqlite
 
             var closeConnection = (behavior & CommandBehavior.CloseConnection) != 0;
 
-            return new SqliteDataReader(Connection, stmts, hasChanges ? changes : -1, closeConnection);
+            return new SqliteDataReader(this, stmts, hasChanges ? changes : -1, closeConnection);
         }
 
         /// <summary>

@@ -22,7 +22,7 @@ namespace Microsoft.Data.Sqlite
     public partial class SqliteConnection : DbConnection
     {
         private const string MainDatabaseName = "main";
-        private readonly List<sqlite3_stmt> _preparedStatements = new List<sqlite3_stmt>();
+        internal readonly List<sqlite3_stmt> _preparedStatements = new List<sqlite3_stmt>();
 
         private string _connectionString;
         private ConnectionState _state;
