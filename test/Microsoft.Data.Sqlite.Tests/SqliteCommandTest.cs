@@ -5,6 +5,7 @@ using System;
 using System.Data;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Data.Sqlite.Properties;
@@ -31,6 +32,31 @@ namespace Microsoft.Data.Sqlite
                     Assert.Same(transaction, command.Transaction);
                 }
             }
+        }
+
+        [Fact]
+        public void Stmts_are_freed_when_DbCommand_is_finalized()
+        {
+            using (var connection = new SqliteConnection("Data Source=:memory:"))
+            {
+                connection.Open();
+
+                CreateAndPrepareCommand(connection);
+                for (int i = 0; i < 500; i++)
+                {
+                    GC.Collect();
+                }
+
+                Assert.Empty(connection._preparedStatements);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        void CreateAndPrepareCommand(SqliteConnection connection)
+        {
+            var command = connection.CreateCommand();
+            command.CommandText = "SELECT 1;";
+            command.Prepare();
         }
 
         [Fact]
