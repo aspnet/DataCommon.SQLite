@@ -65,14 +65,6 @@ namespace Microsoft.Data.Sqlite
         }
 
         /// <summary>
-        /// Finalizes an instance of the <see cref="SqliteCommand"/> class.
-        /// </summary>
-        ~SqliteCommand()
-        {
-            Connection?.DisposePreparedStatements(_preparedStatements);
-        }
-
-        /// <summary>
         /// Gets or sets a value indicating how <see cref="CommandText" /> is interpreted. Only
         /// <see cref="CommandType.Text" /> is supported.
         /// </summary>
@@ -100,7 +92,7 @@ namespace Microsoft.Data.Sqlite
             {
                 if (!value.Equals(_commandText))
                 {
-                    Connection?.DisposePreparedStatements(_preparedStatements);
+                    DisposePreparedStatements();
                     _commandText = value;
                 }
             }
@@ -117,7 +109,7 @@ namespace Microsoft.Data.Sqlite
             {
                 if (!value.Equals(_connection))
                 {
-                    _connection?.DisposePreparedStatements(_preparedStatements);
+                    DisposePreparedStatements();
                     _connection = value;
                 }
             }
@@ -192,10 +184,7 @@ namespace Microsoft.Data.Sqlite
         /// </param>
         protected override void Dispose(bool disposing)
         {
-            if (disposing)
-            {
-                Connection?.DisposePreparedStatements(_preparedStatements);
-            }
+            DisposePreparedStatements();
 
             base.Dispose(disposing);
         }
@@ -232,7 +221,26 @@ namespace Microsoft.Data.Sqlite
 
             if (_preparedStatements.Count == 0)
             {
-                Connection.GetPreparedStatements(CommandText, _preparedStatements);
+                var tail = CommandText;
+                sqlite3_stmt stmt;
+                do
+                {
+                    (stmt, tail) = GetPreparedStatement(tail);
+
+                    // Statement was empty, white space, or a comment
+                    if (stmt.ptr == IntPtr.Zero)
+                    {
+                        if (!string.IsNullOrEmpty(tail))
+                        {
+                            continue;
+                        }
+
+                        break;
+                    }
+
+                    _preparedStatements.Add(stmt);
+                }
+                while (!string.IsNullOrEmpty(tail));
             }
         }
 
@@ -299,7 +307,7 @@ namespace Microsoft.Data.Sqlite
             {
                 if (tail != null)
                 {
-                    (stmt, tail) = Connection.GetPreparedStatement(tail);
+                    (stmt, tail) = GetPreparedStatement(tail);
 
                     // Statement was empty, white space, or a comment
                     if (stmt.ptr == IntPtr.Zero)
@@ -519,6 +527,29 @@ namespace Microsoft.Data.Sqlite
         /// </summary>
         public override void Cancel()
         {
+        }
+
+        private (sqlite3_stmt stmt, string tail) GetPreparedStatement(string commandText)
+        {
+            var tail = commandText;
+            var rc = raw.sqlite3_prepare_v2(
+                Connection.Handle,
+                tail,
+                out sqlite3_stmt stmt,
+                out tail);
+            SqliteException.ThrowExceptionForRC(rc, Connection.Handle);
+
+            return (stmt, tail);
+        }
+
+        private void DisposePreparedStatements()
+        {
+            foreach (var stmt in _preparedStatements)
+            {
+                stmt.Dispose();
+            }
+
+            _preparedStatements.Clear();
         }
     }
 }

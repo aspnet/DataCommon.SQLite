@@ -22,7 +22,7 @@ namespace Microsoft.Data.Sqlite
     public partial class SqliteConnection : DbConnection
     {
         private const string MainDatabaseName = "main";
-        internal readonly List<sqlite3_stmt> _preparedStatements = new List<sqlite3_stmt>();
+        internal readonly List<WeakReference<SqliteCommand>> _commands = new List<WeakReference<SqliteCommand>>();
 
         private string _connectionString;
         private ConnectionState _state;
@@ -231,7 +231,14 @@ namespace Microsoft.Data.Sqlite
             }
 
             Transaction?.Dispose();
-            DisposePreparedStatements(_preparedStatements);
+            foreach (var reference in _commands)
+            {
+                if (reference.TryGetTarget(out var command))
+                {
+                    command.Dispose();
+                }
+            }
+
             _db.Dispose();
             _db = null;
             SetState(ConnectionState.Closed);
@@ -262,7 +269,11 @@ namespace Microsoft.Data.Sqlite
         /// transaction.
         /// </remarks>
         public new virtual SqliteCommand CreateCommand()
-            => new SqliteCommand { Connection = this, Transaction = Transaction };
+        {
+            var command = new SqliteCommand { Connection = this, Transaction = Transaction };
+            _commands.Add(new WeakReference<SqliteCommand>(command));
+            return command;
+        }
 
         /// <summary>
         /// Creates a new command associated with the connection.
@@ -328,62 +339,6 @@ namespace Microsoft.Data.Sqlite
 
             var rc = raw.sqlite3_enable_load_extension(_db, enable ? 1 : 0);
             SqliteException.ThrowExceptionForRC(rc, _db);
-        }
-
-        internal (sqlite3_stmt stmt, string tail) GetPreparedStatement(string commandText)
-        {
-            var tail = commandText;
-            var rc = raw.sqlite3_prepare_v2(
-                _db,
-                tail,
-                out sqlite3_stmt stmt,
-                out tail);
-            SqliteException.ThrowExceptionForRC(rc, _db);
-
-            if (stmt.ptr != IntPtr.Zero)
-            {
-                _preparedStatements.Add(stmt);
-            }
-
-            return (stmt, tail);
-        }
-
-        internal void GetPreparedStatements(string commandText, ICollection<sqlite3_stmt> stmts)
-        {
-            var tail = commandText;
-            sqlite3_stmt stmt;
-            do
-            {
-                (stmt, tail) = GetPreparedStatement(tail);
-
-                // Statement was empty, white space, or a comment
-                if (stmt.ptr == IntPtr.Zero)
-                {
-                    if (!string.IsNullOrEmpty(tail))
-                    {
-                        continue;
-                    }
-
-                    break;
-                }
-
-                stmts.Add(stmt);
-            }
-            while (!string.IsNullOrEmpty(tail));
-        }
-
-        internal void DisposePreparedStatements(IList<sqlite3_stmt> stmts)
-        {
-            // stmts could be _preparedStatements, so we have to traverse
-            // the list from the back to be able to remove the entries
-            for (int i = stmts.Count - 1; i >= 0; i--)
-            {
-                sqlite3_stmt stmt = stmts[i];
-                _preparedStatements.Remove(stmt);
-                stmt.Dispose();
-            }
-
-            stmts.Clear();
-        }
+        }        
     }
 }
