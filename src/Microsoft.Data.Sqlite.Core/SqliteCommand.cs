@@ -22,6 +22,7 @@ namespace Microsoft.Data.Sqlite
         private readonly Lazy<SqliteParameterCollection> _parameters = new Lazy<SqliteParameterCollection>(
             () => new SqliteParameterCollection());
         private readonly List<sqlite3_stmt> _preparedStatements = new List<sqlite3_stmt>();
+        private readonly WeakReference<SqliteCommand> _weakReference;
         private SqliteConnection _connection;
         private string _commandText;
 
@@ -30,13 +31,14 @@ namespace Microsoft.Data.Sqlite
         /// </summary>
         public SqliteCommand()
         {
+            _weakReference = new WeakReference<SqliteCommand>(this);
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteCommand" /> class.
         /// </summary>
         /// <param name="commandText">The SQL to execute against the database.</param>
-        public SqliteCommand(string commandText)
+        public SqliteCommand(string commandText) : this()
             => CommandText = commandText;
 
         /// <summary>
@@ -104,8 +106,9 @@ namespace Microsoft.Data.Sqlite
                 if (value != _connection)
                 {
                     DisposePreparedStatements();
+                    _connection?.Commands.Remove(_weakReference);
                     _connection = value;
-                    _connection?.Commands.Add(new WeakReference<SqliteCommand>(this));
+                    _connection?.Commands.Add(_weakReference);
                 }
             }
         }

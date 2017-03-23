@@ -46,6 +46,7 @@ namespace Microsoft.Data.Sqlite
 
                 command.Connection = null;
                 Assert.Equal(null, command.Connection);
+                Assert.Equal(0, connection.Commands.Count);
             }
         }
 
