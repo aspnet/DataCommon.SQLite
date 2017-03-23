@@ -22,7 +22,6 @@ namespace Microsoft.Data.Sqlite
     public partial class SqliteConnection : DbConnection
     {
         private const string MainDatabaseName = "main";
-        internal readonly List<WeakReference<SqliteCommand>> _commands = new List<WeakReference<SqliteCommand>>();
 
         private string _connectionString;
         private ConnectionState _state;
@@ -77,6 +76,8 @@ namespace Microsoft.Data.Sqlite
                 ConnectionStringBuilder = new SqliteConnectionStringBuilder(value);
             }
         }
+
+        internal List<WeakReference<SqliteCommand>> Commands { get; } = new List<WeakReference<SqliteCommand>>();
 
         internal SqliteConnectionStringBuilder ConnectionStringBuilder { get; set; }
 
@@ -231,7 +232,7 @@ namespace Microsoft.Data.Sqlite
             }
 
             Transaction?.Dispose();
-            foreach (var reference in _commands)
+            foreach (var reference in Commands)
             {
                 if (reference.TryGetTarget(out var command))
                 {
@@ -239,6 +240,7 @@ namespace Microsoft.Data.Sqlite
                 }
             }
 
+            Commands.Clear();
             _db.Dispose();
             _db = null;
             SetState(ConnectionState.Closed);
@@ -269,11 +271,7 @@ namespace Microsoft.Data.Sqlite
         /// transaction.
         /// </remarks>
         public new virtual SqliteCommand CreateCommand()
-        {
-            var command = new SqliteCommand { Connection = this, Transaction = Transaction };
-            _commands.Add(new WeakReference<SqliteCommand>(command));
-            return command;
-        }
+            => new SqliteCommand { Connection = this, Transaction = Transaction };
 
         /// <summary>
         /// Creates a new command associated with the connection.
@@ -339,6 +337,6 @@ namespace Microsoft.Data.Sqlite
 
             var rc = raw.sqlite3_enable_load_extension(_db, enable ? 1 : 0);
             SqliteException.ThrowExceptionForRC(rc, _db);
-        }        
+        }
     }
 }
