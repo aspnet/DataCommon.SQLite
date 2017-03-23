@@ -10,6 +10,7 @@ using System.Globalization;
 using System.Text;
 using Microsoft.Data.Sqlite.Properties;
 using SQLitePCL;
+using System.Text;
 
 namespace Microsoft.Data.Sqlite
 {
@@ -22,7 +23,7 @@ namespace Microsoft.Data.Sqlite
 
         private readonly SqliteCommand _command;
         private readonly bool _closeConnection;
-        private readonly Queue<(sqlite3_stmt stmt, bool)> _stmtQueue;
+        private readonly Queue<(sqlite3_stmt, bool)> _stmtQueue;
         private sqlite3_stmt _stmt;
         private bool _hasRows;
         private bool _stepped;
