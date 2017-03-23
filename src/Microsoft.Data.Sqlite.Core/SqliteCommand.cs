@@ -215,12 +215,12 @@ namespace Microsoft.Data.Sqlite
             if (Connection == null
                 || Connection.State != ConnectionState.Open)
             {
-                throw new InvalidOperationException(Resources.CallRequiresOpenConnection("Prepare"));
+                throw new InvalidOperationException(Resources.CallRequiresOpenConnection(nameof(Prepare)));
             }
 
             if (string.IsNullOrEmpty(CommandText))
             {
-                throw new InvalidOperationException(Resources.CallRequiresSetCommandText("Prepare"));
+                throw new InvalidOperationException(Resources.CallRequiresSetCommandText(nameof(Prepare)));
             }
 
             if (_preparedStatements.Count == 0)
