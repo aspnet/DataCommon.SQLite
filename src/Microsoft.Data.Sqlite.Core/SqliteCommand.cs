@@ -101,11 +101,11 @@ namespace Microsoft.Data.Sqlite
             get { return _connection; }
             set
             {
-                if (!value.Equals(_connection))
+                if (value != _connection)
                 {
                     DisposePreparedStatements();
                     _connection = value;
-                    _connection.Commands.Add(new WeakReference<SqliteCommand>(this));
+                    _connection?.Commands.Add(new WeakReference<SqliteCommand>(this));
                 }
             }
         }

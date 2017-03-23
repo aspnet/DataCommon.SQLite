@@ -32,7 +32,23 @@ namespace Microsoft.Data.Sqlite
                 }
             }
         }
-        
+
+        [Fact]
+        public void Connection_can_be_nullified()
+        {
+            using (var connection = new SqliteConnection("Data Source=:memory:"))
+            {
+                connection.Open();
+
+                var command = connection.CreateCommand();
+                command.CommandText = "CREATE TABLE Data (Value);";
+                command.Prepare();
+
+                command.Connection = null;
+                Assert.Equal(null, command.Connection);
+            }
+        }
+
         [Fact]
         public void CommandType_text_by_default()
         {
@@ -328,7 +344,7 @@ namespace Microsoft.Data.Sqlite
                 command.Parameters.AddWithValue("@Parameter", 1);
 
                 Assert.Equal(1L, command.ExecuteScalar());
-                
+
                 command.Parameters["@Parameter"].Value = 2;
                 Assert.Equal(2L, command.ExecuteScalar());
             }
