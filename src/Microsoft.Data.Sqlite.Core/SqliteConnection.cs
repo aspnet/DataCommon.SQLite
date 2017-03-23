@@ -265,6 +265,25 @@ namespace Microsoft.Data.Sqlite
             => CreateCommand();
 
         /// <summary>
+        /// Create custom collation.
+        /// </summary>
+        /// <param name="name">Name of the collation.</param>
+        /// <param name="comparison">Method that compares two strings.</param>
+        public void CreateCollation(string name, Comparison<string> comparison)
+            => CreateCollation(name, (_, s1, s2) => comparison(s1, s2));
+
+        /// <summary>
+        /// Create custom collation.
+        /// </summary>
+        /// <param name="name">Name of the collation.</param>
+        /// <param name="collation">Method that compares two strings, using additional user data.</param>
+        internal void CreateCollation(string name, delegate_collation collation)
+        {
+            var rc = raw.sqlite3_create_collation(_db, name, null, collation);
+            SqliteException.ThrowExceptionForRC(rc, _db);
+        }
+
+        /// <summary>
         /// Begins a transaction on the connection.
         /// </summary>
         /// <returns>The transaction.</returns>
