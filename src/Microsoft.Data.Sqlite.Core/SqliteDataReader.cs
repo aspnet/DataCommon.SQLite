@@ -450,8 +450,6 @@ namespace Microsoft.Data.Sqlite
             var sqliteType = GetSqliteType(ordinal);
             switch (sqliteType)
             {
-                case raw.SQLITE_TEXT:
-                    return new Guid(GetString(ordinal));
                 case raw.SQLITE_BLOB:
                     var bytes = GetBlob(ordinal);
                     if (bytes.Length == 16)
@@ -463,7 +461,7 @@ namespace Microsoft.Data.Sqlite
                         return new Guid(System.Text.Encoding.UTF8.GetString(bytes, 0, bytes.Length));
                     }
                 default:
-                    return new Guid(GetBlob(ordinal));
+                    return new Guid(GetString(ordinal));
             }
         }  
 
