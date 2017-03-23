@@ -105,6 +105,7 @@ namespace Microsoft.Data.Sqlite
                 {
                     DisposePreparedStatements();
                     _connection = value;
+                    _connection.Commands.Add(new WeakReference<SqliteCommand>(this));
                 }
             }
         }
@@ -362,36 +363,28 @@ namespace Microsoft.Data.Sqlite
                     throw new InvalidOperationException(Resources.MissingParameters(string.Join(", ", unboundParams)));
                 }
 
-                try
+                var timer = Stopwatch.StartNew();
+                while (raw.SQLITE_LOCKED == (rc = raw.sqlite3_step(stmt)) || rc == raw.SQLITE_BUSY)
                 {
-                    var timer = Stopwatch.StartNew();
-                    while (raw.SQLITE_LOCKED == (rc = raw.sqlite3_step(stmt)) || rc == raw.SQLITE_BUSY)
+                    if (timer.ElapsedMilliseconds >= CommandTimeout * 1000)
                     {
-                        if (timer.ElapsedMilliseconds >= CommandTimeout * 1000)
-                        {
-                            break;
-                        }
-
-                        raw.sqlite3_reset(stmt);
-
-#if NET451
-                        // TODO: Consider having an async path that uses Task.Delay()
-                        Thread.Sleep(150);
-#endif
+                        break;
                     }
 
-                    SqliteException.ThrowExceptionForRC(rc, Connection.Handle);
+                    raw.sqlite3_reset(stmt);
+
+#if NET451
+                    // TODO: Consider having an async path that uses Task.Delay()
+                    Thread.Sleep(150);
+#endif
                 }
-                catch
-                {
-                    throw;
-                }
+
+                SqliteException.ThrowExceptionForRC(rc, Connection.Handle);
 
                 if (rc == raw.SQLITE_ROW
                     // NB: This is only a heuristic to separate SELECT statements from INSERT/UPDATE/DELETE statements.
                     //     It will result in false positives, but it's the best we can do without re-parsing SQL
-                    || raw.sqlite3_stmt_readonly(stmt) != 0)
-                {
+                    || raw.sqlite3_stmt_readonly(stmt) != 0)                {
                     stmts.Enqueue((stmt, rc != raw.SQLITE_DONE));
                 }
                 else
