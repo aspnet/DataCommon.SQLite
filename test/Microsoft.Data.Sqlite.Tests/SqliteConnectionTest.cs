@@ -311,6 +311,24 @@ namespace Microsoft.Data.Sqlite
         }
 
         [Fact]
+        public void CreateFunction_works()
+        {
+            using (var connection = new SqliteConnection("Data Source=:memory:"))
+            {
+                connection.Open();
+                connection.CreateFunction("Ceiling", 1, MyCeilingFunction);
+
+                Assert.Equal(2L, connection.ExecuteScalar<long>("SELECT Ceiling(1.1);"));
+            }
+        }
+
+        private SqliteValue MyCeilingFunction(SqliteValue[] arguments)
+        {
+            var arg = (double)arguments[0].Value;
+            return new SqliteValue((long)Math.Ceiling(arg));
+        }
+
+        [Fact]
         public void BeginTransaction_throws_when_closed()
         {
             var connection = new SqliteConnection();

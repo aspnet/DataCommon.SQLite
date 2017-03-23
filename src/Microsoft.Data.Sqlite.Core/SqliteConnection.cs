@@ -269,6 +269,35 @@ namespace Microsoft.Data.Sqlite
             => CreateCommand();
 
         /// <summary>
+        /// Register user defined function.
+        /// </summary>
+        /// <param name="name">Name of the function.</param>
+        /// <param name="numberOfArguments">Number of parameters.</param>
+        /// <param name="function">The user defined function.</param>
+        public void CreateFunction(string name, int numberOfArguments, Func<SqliteValue[], SqliteValue> function)
+        {
+            delegate_function_scalar scalarFunction = (ctx, _, args) =>
+            {
+                var result = function(SqliteValue.ConvertToSqliteValueArray(args));
+                SqliteValue.SetResult(result, ctx);
+            };
+
+            CreateFunction(name, numberOfArguments, scalarFunction);
+        }
+
+        /// <summary>
+        /// Register user defined function.
+        /// </summary>
+        /// <param name="name">Name of the function.</param>
+        /// <param name="numberOfArguments">Number of parameters.</param>
+        /// <param name="scalarFunction">The user defined function.</param>
+        internal void CreateFunction(string name, int numberOfArguments, delegate_function_scalar scalarFunction)
+        {
+            var rc = raw.sqlite3_create_function(_db, name, numberOfArguments, null, scalarFunction);
+            SqliteException.ThrowExceptionForRC(rc, _db);
+        }
+
+        /// <summary>
         /// Begins a transaction on the connection.
         /// </summary>
         /// <returns>The transaction.</returns>
