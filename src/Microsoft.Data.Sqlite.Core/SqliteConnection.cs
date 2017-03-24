@@ -9,7 +9,7 @@ using Microsoft.Data.Sqlite.Properties;
 using Microsoft.Data.Sqlite.Utilities;
 using SQLitePCL;
 
-#if NET451
+#if NET46
 using System.IO;
 #endif
 
@@ -200,7 +200,7 @@ namespace Microsoft.Data.Sqlite
                     break;
             }
 
-#if NET451
+#if NET46
             var dataDirectory = AppDomain.CurrentDomain.GetData("DataDirectory") as string;
             if (!string.IsNullOrEmpty(dataDirectory)
                 && (flags & raw.SQLITE_OPEN_URI) == 0
@@ -209,6 +209,9 @@ namespace Microsoft.Data.Sqlite
             {
                 filename = Path.Combine(dataDirectory, filename);
             }
+#elif NETSTANDARD1_2
+#else
+#error Target frameworks need to be updated.
 #endif
 
             var rc = raw.sqlite3_open_v2(filename, out _db, flags, vfs: null);

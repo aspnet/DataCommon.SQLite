@@ -162,12 +162,15 @@ namespace Microsoft.Data.Sqlite
             return true;
         }
 
-#if NET451 // NB: This works around dotnet/corefx#2249
+#if NET46 // NB: This works around dotnet/corefx#2249
         /// <summary>
         /// Closes the data reader.
         /// </summary>
         public override void Close()
             => Dispose(true);
+#elif NETSTANDARD1_2
+#else
+#error Target frameworks need to be updated.
 #endif
 
         /// <summary>

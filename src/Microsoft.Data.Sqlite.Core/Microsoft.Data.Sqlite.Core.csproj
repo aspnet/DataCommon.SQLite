@@ -17,7 +17,7 @@ Microsoft.Data.Sqlite.SqliteException
 Microsoft.Data.Sqlite.SqliteFactory
 Microsoft.Data.Sqlite.SqliteParameter
 Microsoft.Data.Sqlite.SqliteTransaction</Description>
-    <TargetFrameworks>net451;netstandard1.2</TargetFrameworks>
+    <TargetFrameworks>net46;netstandard1.2</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory)$(MSBuildProjectName).ruleset</CodeAnalysisRuleSet>
     <IncludeSymbols>true</IncludeSymbols>

@@ -285,9 +285,12 @@ namespace Microsoft.Data.Sqlite
 
                         raw.sqlite3_reset(stmt);
 
-#if NET451
+#if NET46
                         // TODO: Consider having an async path that uses Task.Delay()
                         Thread.Sleep(150);
+#elif NETSTANDARD1_2
+#else
+#error Target frameworks need to be updated.
 #endif
                     }
 
