@@ -324,6 +324,23 @@ namespace Microsoft.Data.Sqlite
         }
 
         [Fact]
+        public void CreateCollation_with_null_comparer_works()
+        {
+            using (var connection = new SqliteConnection("Data Source=:memory:"))
+            {
+                connection.Open();
+                connection.CreateCollation("MY_NOCASE", (s1, s2) => string.Compare(s1, s2, StringComparison.OrdinalIgnoreCase));
+                connection.CreateCollation("MY_NOCASE", null);
+
+                var ex = Assert.Throws<SqliteException>(
+                    () => connection.ExecuteScalar<long>("SELECT 'Νικοσ' = 'ΝΙΚΟΣ' COLLATE MY_NOCASE;"));
+
+                Assert.Equal(raw.SQLITE_ERROR, ex.SqliteErrorCode);
+                Assert.Contains("no such collation sequence", ex.Message);
+            }
+        }
+
+        [Fact]
         public void CreateCollation_throws_when_closed()
         {
             var connection = new SqliteConnection();

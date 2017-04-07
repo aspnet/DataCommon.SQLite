@@ -270,7 +270,7 @@ namespace Microsoft.Data.Sqlite
         /// <param name="name">Name of the collation.</param>
         /// <param name="comparison">Method that compares two strings.</param>
         public virtual void CreateCollation(string name, Comparison<string> comparison)
-            => CreateCollation<object>(name, null, (_, s1, s2) => comparison(s1, s2));
+            => CreateCollation<object>(name, null, comparison != null ? (_, s1, s2) => comparison(s1, s2) : (Func<object, string, string, int>)null);
 
         /// <summary>
         /// Create custom collation.
@@ -286,7 +286,8 @@ namespace Microsoft.Data.Sqlite
                 throw new InvalidOperationException(Resources.CallRequiresOpenConnection(nameof(CreateCollation)));
             }
 
-            var rc = raw.sqlite3_create_collation(_db, name, state, (v, s1, s2) => comparison((T)v, s1, s2));
+            delegate_collation collation = comparison != null ? (v, s1, s2) => comparison((T)v, s1, s2) : (delegate_collation)null;
+            var rc = raw.sqlite3_create_collation(_db, name, state, collation);
             SqliteException.ThrowExceptionForRC(rc, _db);
         }
 
