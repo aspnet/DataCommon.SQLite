@@ -270,7 +270,7 @@ namespace Microsoft.Data.Sqlite
         /// <param name="name">Name of the collation.</param>
         /// <param name="comparison">Method that compares two strings.</param>
         public virtual void CreateCollation(string name, Comparison<string> comparison)
-            => CreateSqlite3Collation(name, null, (_, s1, s2) => comparison(s1, s2));
+            => CreateCollation<object>(name, null, (_, s1, s2) => comparison(s1, s2));
 
         /// <summary>
         /// Create custom collation.
@@ -280,11 +280,8 @@ namespace Microsoft.Data.Sqlite
         /// <param name="state">State object passed to each invokation of the collation.</param>
         /// <param name="comparison">Method that compares two strings, using additional state.</param>
         public virtual void CreateCollation<T>(string name, T state, Func<T, string, string, int> comparison)
-            => CreateSqlite3Collation(name, state, (v, s1, s2) => comparison((T)v, s1, s2));
-
-        private void CreateSqlite3Collation(string name, object state, delegate_collation collation)
         {
-            var rc = raw.sqlite3_create_collation(_db, name, state, collation);
+            var rc = raw.sqlite3_create_collation(_db, name, state, (v, s1, s2) => comparison((T)v, s1, s2));
             SqliteException.ThrowExceptionForRC(rc, _db);
         }
 
