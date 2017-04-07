@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using Microsoft.Data.Sqlite.Properties;
@@ -319,6 +320,28 @@ namespace Microsoft.Data.Sqlite
                 connection.CreateCollation("MY_NOCASE", (s1, s2) => string.Compare(s1, s2, StringComparison.OrdinalIgnoreCase));
 
                 Assert.Equal(1L, connection.ExecuteScalar<long>("SELECT 'Νικοσ' = 'ΝΙΚΟΣ' COLLATE MY_NOCASE;"));
+            }
+        }
+
+        [Fact]
+        public void CreatCollation_works_with_state()
+        {
+            using (var connection = new SqliteConnection("Data Source=:memory:"))
+            {
+                connection.Open();
+                var list = new List<string>();
+                connection.CreateCollation<List<string>>(
+                    "MY_NOCASE",
+                    list,
+                    (l, s1, s2) =>
+                    {
+                        l.Add("Invoked");
+                        return string.Compare(s1, s2, StringComparison.OrdinalIgnoreCase);
+                    });
+
+                Assert.Equal(1L, connection.ExecuteScalar<long>("SELECT 'Νικοσ' = 'ΝΙΚΟΣ' COLLATE MY_NOCASE;"));
+                Assert.Equal(1, list.Count);
+                Assert.Equal("Invoked", list[0]);
             }
         }
 

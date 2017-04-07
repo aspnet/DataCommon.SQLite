@@ -269,17 +269,22 @@ namespace Microsoft.Data.Sqlite
         /// </summary>
         /// <param name="name">Name of the collation.</param>
         /// <param name="comparison">Method that compares two strings.</param>
-        public void CreateCollation(string name, Comparison<string> comparison)
-            => CreateCollation(name, (_, s1, s2) => comparison(s1, s2));
+        public virtual void CreateCollation(string name, Comparison<string> comparison)
+            => CreateCollation(name, null, (_, s1, s2) => comparison(s1, s2));
 
         /// <summary>
         /// Create custom collation.
         /// </summary>
+        /// <typeparam name="T">The type of the state object.</typeparam>
         /// <param name="name">Name of the collation.</param>
-        /// <param name="collation">Method that compares two strings, using additional user data.</param>
-        internal void CreateCollation(string name, delegate_collation collation)
+        /// <param name="state">State object passed to each invokation of the collation.</param>
+        /// <param name="comparison">Method that compares two strings, using additional state.</param>
+        public virtual void CreateCollation<T>(string name, T state, Func<T, string, string, int> comparison)
+            => CreateCollation(name, state, (v, s1, s2) => comparison((T)v, s1, s2));
+
+        private void CreateCollation(string name, object state, delegate_collation collation)
         {
-            var rc = raw.sqlite3_create_collation(_db, name, null, collation);
+            var rc = raw.sqlite3_create_collation(_db, name, state, collation);
             SqliteException.ThrowExceptionForRC(rc, _db);
         }
 
