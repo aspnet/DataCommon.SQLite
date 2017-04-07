@@ -336,7 +336,6 @@ namespace Microsoft.Data.Sqlite
                     () => connection.ExecuteScalar<long>("SELECT 'Νικοσ' = 'ΝΙΚΟΣ' COLLATE MY_NOCASE;"));
 
                 Assert.Equal(raw.SQLITE_ERROR, ex.SqliteErrorCode);
-                Assert.Contains("no such collation sequence", ex.Message);
             }
         }
 
@@ -348,6 +347,18 @@ namespace Microsoft.Data.Sqlite
             var ex = Assert.Throws<InvalidOperationException>(() => connection.CreateCollation("NOCOL", (s1, s2) => -1));
 
             Assert.Equal(Resources.CallRequiresOpenConnection("CreateCollation"), ex.Message);
+        }
+
+        [Fact]
+        public void CreateCollation_throws_with_empty_name()
+        {
+            using (var connection = new SqliteConnection("Data Source=:memory:"))
+            {
+                connection.Open();
+                var ex = Assert.Throws<ArgumentNullException>(() => connection.CreateCollation(null, null));
+
+                Assert.Equal("name", ex.ParamName);
+            }
         }
 
         [Fact]

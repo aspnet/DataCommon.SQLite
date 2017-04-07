@@ -281,6 +281,11 @@ namespace Microsoft.Data.Sqlite
         /// <param name="comparison">Method that compares two strings, using additional state.</param>
         public virtual void CreateCollation<T>(string name, T state, Func<T, string, string, int> comparison)
         {
+            if (string.IsNullOrEmpty(name))
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
             if (State != ConnectionState.Open)
             {
                 throw new InvalidOperationException(Resources.CallRequiresOpenConnection(nameof(CreateCollation)));
