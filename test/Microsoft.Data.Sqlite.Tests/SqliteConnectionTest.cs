@@ -312,7 +312,7 @@ namespace Microsoft.Data.Sqlite
         }
 
         [Fact]
-        public void CreatCollation_works()
+        public void CreateCollation_works()
         {
             using (var connection = new SqliteConnection("Data Source=:memory:"))
             {
@@ -324,7 +324,7 @@ namespace Microsoft.Data.Sqlite
         }
 
         [Fact]
-        public void CreatCollation_works_with_state()
+        public void CreateCollation_works_with_state()
         {
             using (var connection = new SqliteConnection("Data Source=:memory:"))
             {
