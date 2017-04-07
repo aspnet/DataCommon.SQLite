@@ -86,6 +86,12 @@ namespace Microsoft.Data.Sqlite
             {
                 if (!value.Equals(_commandText))
                 {
+                   if (DataReader != null)
+                   {
+                       // TODO: Resource
+                       throw new InvalidOperationException("An open data reader is associated with this command. Close it before changing the CommandText property.");
+                   }
+
                     DisposePreparedStatements();
                     _commandText = value;
                 }
@@ -103,6 +109,12 @@ namespace Microsoft.Data.Sqlite
             {
                 if (value != _connection)
                 {
+                    if (DataReader != null)
+                    {
+                        // TODO: Resource
+                        throw new InvalidOperationException("An open data reader is associated with this command. Close it before changing the Connection property.");
+                    }
+
                     DisposePreparedStatements();
 
                     _connection?.RemoveCommand(this);
@@ -174,17 +186,19 @@ namespace Microsoft.Data.Sqlite
         public override UpdateRowSource UpdatedRowSource { get; set; }
 
         /// <summary>
+        /// Gets or sets the data reader currently being used by the command, or null if none.
+        /// </summary>
+        /// <value>The data reader currently being used by the command.</value>
+        protected internal virtual SqliteDataReader DataReader { get; set; }
+
+        /// <summary>
         /// Releases any resources used by the connection and closes it.
         /// </summary>
         /// <param name="disposing">
         /// true to release managed and unmanaged resources; false to release only unmanaged resources.
         /// </param>
         protected override void Dispose(bool disposing)
-        {
-            DisposePreparedStatements();
-
-            base.Dispose(disposing);
-        }
+            => DisposePreparedStatements(disposing);
 
         /// <summary>
         /// Creates a new parameter.
@@ -255,6 +269,11 @@ namespace Microsoft.Data.Sqlite
                 throw new ArgumentException(Resources.InvalidCommandBehavior(behavior));
             }
 
+            if (DataReader != null)
+            {
+                throw new InvalidOperationException(Resources.DataReaderOpen);
+            }
+
             if (_connection?.State != ConnectionState.Open)
             {
                 throw new InvalidOperationException(Resources.CallRequiresOpenConnection(nameof(ExecuteReader)));
@@ -284,7 +303,7 @@ namespace Microsoft.Data.Sqlite
 
             foreach (var stmt in _preparedStatements.Count == 0
                 ? PrepareAndEnumerateStatements()
-                : ResetAndEnumerateStatements())
+                : _preparedStatements)
             {
                 var boundParams = 0;
 
@@ -346,7 +365,7 @@ namespace Microsoft.Data.Sqlite
 
             var closeConnection = (behavior & CommandBehavior.CloseConnection) != 0;
 
-            return new SqliteDataReader(this, stmts, hasChanges ? changes : -1, closeConnection);
+            return DataReader = new SqliteDataReader(this, stmts, hasChanges ? changes : -1, closeConnection);
         }
 
         /// <summary>
@@ -505,17 +524,7 @@ namespace Microsoft.Data.Sqlite
             while (!string.IsNullOrEmpty(tail));
         }
 
-        private IEnumerable<sqlite3_stmt> ResetAndEnumerateStatements()
-        {
-            foreach (var stmt in _preparedStatements)
-            {
-                raw.sqlite3_reset(stmt);
-
-                yield return stmt;
-            }
-        }
-
-        private void DisposePreparedStatements()
+        private void DisposePreparedStatements(bool disposing = true)
         {
             foreach (var stmt in _preparedStatements)
             {
@@ -523,6 +532,17 @@ namespace Microsoft.Data.Sqlite
             }
 
             _preparedStatements.Clear();
+
+            if (!disposing)
+            {
+                return;
+            }
+
+            if (DataReader != null)
+            {
+                DataReader.Dispose();
+                DataReader = null;
+            }
         }
     }
 }

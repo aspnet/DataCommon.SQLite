@@ -34,18 +34,58 @@ namespace Microsoft.Data.Sqlite
         }
 
         [Fact]
-        public void Connection_can_be_nullified()
+        public void CommandText_throws_when_set_when_open_reader()
         {
             using (var connection = new SqliteConnection("Data Source=:memory:"))
             {
                 connection.Open();
 
                 var command = connection.CreateCommand();
-                command.CommandText = "CREATE TABLE Data (Value);";
+                command.CommandText = "SELECT 1;";
+
+                using (var reader = command.ExecuteReader())
+                {
+                    reader.Read();
+
+                    var ex = Assert.Throws<InvalidOperationException>(() => command.CommandText = "SELECT 2;");
+                    // TODO: Assert ex.Message
+                }
+            }
+        }
+
+        [Fact]
+        public void Connection_can_be_unset()
+        {
+            using (var connection = new SqliteConnection("Data Source=:memory:"))
+            {
+                connection.Open();
+
+                var command = connection.CreateCommand();
+                command.CommandText = "SELECT 1;";
                 command.Prepare();
 
                 command.Connection = null;
                 Assert.Null(command.Connection);
+            }
+        }
+
+        [Fact]
+        public void Connection_throws_when_set_when_open_reader()
+        {
+            using (var connection = new SqliteConnection("Data Source=:memory:"))
+            {
+                connection.Open();
+
+                var command = connection.CreateCommand();
+                command.CommandText = "SELECT 1;";
+
+                using (var reader = command.ExecuteReader())
+                {
+                    reader.Read();
+
+                    var ex = Assert.Throws<InvalidOperationException>(() => command.Connection = new SqliteConnection());
+                    // TODO: Assert ex.Message
+                }
             }
         }
 
@@ -121,7 +161,7 @@ namespace Microsoft.Data.Sqlite
             {
                 connection.Open();
                 var command = connection.CreateCommand();
-                command.CommandText = "CREATE TABLE Data (Value); INSERT INTO Data VALUES (0);";
+                command.CommandText = "CREATE TABLE Data (Value); SELECT * FROM Data;";
                 var ex = Assert.Throws<SqliteException>(() => command.Prepare());
 
                 Assert.Equal(1, ex.SqliteErrorCode);
@@ -226,15 +266,15 @@ namespace Microsoft.Data.Sqlite
         }
 
         [Fact]
-        public void ExecuteNonQuery_processes_dependent_commands()
+        public void ExecuteScalar_processes_dependent_commands()
         {
             using (var connection = new SqliteConnection("Data Source=:memory:"))
             {
                 connection.Open();
                 var command = connection.CreateCommand();
-                command.CommandText = "CREATE TABLE Data (Value); INSERT INTO Data VALUES (0);";
+                command.CommandText = "CREATE TABLE Data (Value); SELECT * FROM Data;";
 
-                command.ExecuteNonQuery();
+                Assert.Null(command.ExecuteScalar());
             }
         }
 
@@ -331,24 +371,6 @@ namespace Microsoft.Data.Sqlite
         }
 
         [Fact]
-        public void ExecuteReader_reuse_statement()
-        {
-            using (var connection = new SqliteConnection("Data Source=:memory:"))
-            {
-                connection.Open();
-                var command = connection.CreateCommand();
-                command.CommandText = "SELECT @Parameter;";
-                command.Prepare();
-                command.Parameters.AddWithValue("@Parameter", 1);
-
-                Assert.Equal(1L, command.ExecuteScalar());
-
-                command.Parameters["@Parameter"].Value = 2;
-                Assert.Equal(2L, command.ExecuteScalar());
-            }
-        }
-
-        [Fact]
         public void ExecuteReader_throws_when_parameter_unset()
         {
             using (var connection = new SqliteConnection("Data Source=:memory:"))
@@ -359,6 +381,23 @@ namespace Microsoft.Data.Sqlite
 
                 var ex = Assert.Throws<InvalidOperationException>(() => command.ExecuteScalar());
                 Assert.Equal(Resources.MissingParameters("@Parameter"), ex.Message);
+            }
+        }
+
+        [Fact]
+        public void ExecuteReader_throws_when_reader_open()
+        {
+            using (var connection = new SqliteConnection("Data Source=:memory:"))
+            {
+                var command = connection.CreateCommand();
+                command.CommandText = "SELECT 1;";
+                connection.Open();
+
+                using (var reader = command.ExecuteReader())
+                {
+                    var ex = Assert.Throws<InvalidOperationException>(() => command.ExecuteReader());
+                    Assert.Equal(Resources.DataReaderOpen, ex.Message);
+                }
             }
         }
 
