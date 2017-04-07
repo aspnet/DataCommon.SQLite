@@ -324,6 +324,16 @@ namespace Microsoft.Data.Sqlite
         }
 
         [Fact]
+        public void CreateCollation_throws_when_closed()
+        {
+            var connection = new SqliteConnection();
+
+            var ex = Assert.Throws<InvalidOperationException>(() => connection.CreateCollation("NOCOL", (s1, s2) => -1));
+
+            Assert.Equal(Resources.CallRequiresOpenConnection("CreateCollation"), ex.Message);
+        }
+
+        [Fact]
         public void CreateCollation_works_with_state()
         {
             using (var connection = new SqliteConnection("Data Source=:memory:"))
