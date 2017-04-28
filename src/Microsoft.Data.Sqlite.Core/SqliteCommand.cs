@@ -219,18 +219,16 @@ namespace Microsoft.Data.Sqlite
             var changes = 0;
             var stmts = new Queue<(sqlite3_stmt, bool)>();
             var tail = CommandText;
+            int rc;
 
             do
             {
-                var rc = raw.sqlite3_prepare_v2(
-                        Connection.Handle,
-                        tail,
-                        out var stmt,
-                        out tail);
-                SqliteException.ThrowExceptionForRC(rc, Connection.Handle);
+                var stmtTuple = Connection.CreateStatement(tail);
+                var stmt = stmtTuple.Statement;
+                tail = stmtTuple.Tail;
 
                 // Statement was empty, white space, or a comment
-                if (stmt.ptr == IntPtr.Zero)
+                if (stmt.Ptr == IntPtr.Zero)
                 {
                     if (!string.IsNullOrEmpty(tail))
                     {

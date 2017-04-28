@@ -677,7 +677,12 @@ namespace Microsoft.Data.Sqlite
             return i;
         }
 
-        private byte[] GetBlob(int ordinal)
+        /// <summary>
+        /// Gets the value of the specified column as an array of bytes.
+        /// </summary>
+        /// <param name="ordinal">The zero-based column ordinal.</param>
+        /// <returns>The value of the column.</returns>
+        public virtual byte[] GetBlob(int ordinal)
             => IsDBNull(ordinal)
                 ? throw new InvalidCastException()
                 : raw.sqlite3_column_blob(_stmt, ordinal) ?? _emptyByteArray;

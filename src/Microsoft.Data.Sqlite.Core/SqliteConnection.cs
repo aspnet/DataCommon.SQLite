@@ -264,6 +264,18 @@ namespace Microsoft.Data.Sqlite
         protected override DbCommand CreateDbCommand()
             => CreateCommand();
 
+        internal (SqliteStatement Statement, string Tail) CreateStatement(string sql)
+        {
+            var rc = raw.sqlite3_prepare_v2(
+                    Handle,
+                    sql,
+                    out var stmt,
+                    out var tail);
+            SqliteException.ThrowExceptionForRC(rc, Handle);
+            var statement = new SqliteStatement(stmt, this);
+            return (statement, tail);
+        }
+
         /// <summary>
         /// Create custom collation.
         /// </summary>
