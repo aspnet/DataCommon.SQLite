@@ -244,7 +244,16 @@ namespace Microsoft.Data.Sqlite
 
                 if (_parameters.IsValueCreated)
                 {
-                    boundParams = _parameters.Value.Bind(stmt);
+                    try
+                    {
+                        boundParams = _parameters.Value.Bind(stmt);
+                    }
+                    catch
+                    {
+                        // we have to dispose the statement in case of an exception, otherwise the connection cannot be closed anymore
+                        stmt.Dispose();
+                        throw;
+                    }
                 }
 
                 var expectedParams = raw.sqlite3_bind_parameter_count(stmt);
@@ -263,6 +272,8 @@ namespace Microsoft.Data.Sqlite
                         }
                     }
 
+                    // we have to dispose the statement in case of an exception, otherwise the connection cannot be closed anymore
+                    stmt.Dispose();
                     throw new InvalidOperationException(Resources.MissingParameters(string.Join(", ", unboundParams)));
                 }
 

@@ -225,7 +225,11 @@ namespace Microsoft.Data.Sqlite
             }
 
             Transaction?.Dispose();
-            _db.Dispose();
+
+            var rc = raw.sqlite3_close(_db);
+#if DEBUG
+            SqliteException.ThrowExceptionForRC(rc, _db);
+#endif
             _db = null;
             SetState(ConnectionState.Closed);
         }
