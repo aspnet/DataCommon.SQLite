@@ -10,11 +10,13 @@
     <PublicSign Condition="'$(OS)' != 'Windows_NT'">true</PublicSign>
     <VersionSuffix Condition="'$(VersionSuffix)' != '' And '$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
     <PackageTags>SQLite;Data;ADO.NET</PackageTags>
+    <!-- TODO: Remove -->    
+    <EnableApiCheck>false</EnableApiCheck>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Internal.AspNetCore.Sdk" Version="$(InternalAspNetCoreSdkVersion)" PrivateAssets="All" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' And '$(OutputType)' == 'library' And '$(DisableImplicitFrameworkReferences)' != 'true'">
-    <PackageReference Include="NETStandard.Library" Version="$(BundledNETStandardPackageVersion)" />
+    <PackageReference Include="NETStandard.Library" Version="$(NETStandardImplicitPackageVersion)" />
   </ItemGroup>
 </Project>
