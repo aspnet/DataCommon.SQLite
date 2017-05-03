@@ -9,7 +9,7 @@ using Microsoft.Data.Sqlite.Properties;
 using Microsoft.Data.Sqlite.Utilities;
 using SQLitePCL;
 
-#if NET451
+#if NET451 || NETSTANDARD2_0
 using System.IO;
 #endif
 
@@ -196,7 +196,7 @@ namespace Microsoft.Data.Sqlite
                     break;
             }
 
-#if NET451
+#if NET451 || NETSTANDARD2_0
             var dataDirectory = AppDomain.CurrentDomain.GetData("DataDirectory") as string;
             if (!string.IsNullOrEmpty(dataDirectory)
                 && (flags & raw.SQLITE_OPEN_URI) == 0

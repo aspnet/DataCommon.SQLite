@@ -691,7 +691,7 @@ namespace Microsoft.Data.Sqlite
                 connection.Open();
 
                 var reader = connection.ExecuteReader("SELECT 1;");
-#if NET46
+#if NET46 || NETSTANDARD2_0
                 reader.Close();
 #elif NETCOREAPP2_0
                 ((IDisposable)reader).Dispose();

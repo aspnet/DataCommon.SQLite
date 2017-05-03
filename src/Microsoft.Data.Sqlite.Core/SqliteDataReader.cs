@@ -159,7 +159,7 @@ namespace Microsoft.Data.Sqlite
             return true;
         }
 
-#if NET451 // NB: This works around dotnet/corefx#2249
+#if NET451 || NETSTANDARD2_0
         /// <summary>
         /// Closes the data reader.
         /// </summary>

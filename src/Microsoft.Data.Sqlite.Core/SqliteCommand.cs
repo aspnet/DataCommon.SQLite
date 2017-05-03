@@ -278,7 +278,7 @@ namespace Microsoft.Data.Sqlite
 
                         raw.sqlite3_reset(stmt);
 
-#if NET451
+#if NET451 || NETSTANDARD2_0
                         // TODO: Consider having an async path that uses Task.Delay()
                         Thread.Sleep(150);
 #endif
