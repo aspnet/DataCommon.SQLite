@@ -295,7 +295,6 @@ namespace Microsoft.Data.Sqlite
             var changes = 0;
             int rc;
             var stmts = new Queue<(sqlite3_stmt, bool)>();
-            var tail = CommandText;
             sqlite3_stmt stmt;
 
             int count = 0;
@@ -340,7 +339,7 @@ namespace Microsoft.Data.Sqlite
                     catch
                     {
                         // we have to dispose the statement in case of an exception, otherwise the connection cannot be closed anymore
-                        stmt.Dispose();
+                        DisposePreparedStatements();
                         throw;
                     }
                 }
@@ -362,7 +361,7 @@ namespace Microsoft.Data.Sqlite
                     }
 
                     // we have to dispose the statement in case of an exception, otherwise the connection cannot be closed anymore
-                    stmt.Dispose();
+                    DisposePreparedStatements();
                     throw new InvalidOperationException(Resources.MissingParameters(string.Join(", ", unboundParams)));
                 }
 
@@ -387,7 +386,8 @@ namespace Microsoft.Data.Sqlite
                 if (rc == raw.SQLITE_ROW
                     // NB: This is only a heuristic to separate SELECT statements from INSERT/UPDATE/DELETE statements.
                     //     It will result in false positives, but it's the best we can do without re-parsing SQL
-                    || raw.sqlite3_stmt_readonly(stmt) != 0)                {
+                    || raw.sqlite3_stmt_readonly(stmt) != 0)
+                {
                     stmts.Enqueue((stmt, rc != raw.SQLITE_DONE));
                 }
                 else
