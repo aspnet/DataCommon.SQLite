@@ -198,4 +198,7 @@
   <data name="CannotStoreNaN" xml:space="preserve">
     <value>Cannot store 'NaN' values.</value>
   </data>
+  <data name="DataReaderOpen" xml:space="preserve">
+    <value>An open DataReader is already associated with this command. Close it before making changes.</value>
+  </data>
 </root>

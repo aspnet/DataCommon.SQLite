@@ -24,6 +24,7 @@ namespace Microsoft.Data.Sqlite
         private readonly ICollection<sqlite3_stmt> _preparedStatements = new List<sqlite3_stmt>();
         private SqliteConnection _connection;
         private string _commandText;
+        private SqliteDataReader _dataReader;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteCommand" /> class.
@@ -84,8 +85,13 @@ namespace Microsoft.Data.Sqlite
             get => _commandText;
             set
             {
-                if (!value.Equals(_commandText))
+                if (!string.Equals(value, _commandText))
                 {
+                    if (_dataReader != null)
+                    {
+                        throw new InvalidOperationException(Resources.DataReaderOpen);
+                    }
+
                     DisposePreparedStatements();
                     _commandText = value;
                 }
@@ -103,6 +109,11 @@ namespace Microsoft.Data.Sqlite
             {
                 if (value != _connection)
                 {
+                    if (_dataReader != null)
+                    {
+                        throw new InvalidOperationException(Resources.DataReaderOpen);
+                    }
+
                     DisposePreparedStatements();
 
                     _connection?.RemoveCommand(this);
@@ -265,6 +276,11 @@ namespace Microsoft.Data.Sqlite
                 throw new InvalidOperationException(Resources.CallRequiresSetCommandText(nameof(ExecuteReader)));
             }
 
+            if (_dataReader != null)
+            {
+                throw new InvalidOperationException(Resources.DataReaderOpen);
+            }
+
             if (Transaction != _connection.Transaction)
             {
                 throw new InvalidOperationException(
@@ -359,7 +375,8 @@ namespace Microsoft.Data.Sqlite
 
             var closeConnection = (behavior & CommandBehavior.CloseConnection) != 0;
 
-            return new SqliteDataReader(this, stmts, hasChanges ? changes : -1, closeConnection);
+            _dataReader = new SqliteDataReader(this, stmts, hasChanges ? changes : -1, closeConnection);
+            return _dataReader;
         }
 
         /// <summary>
@@ -486,6 +503,11 @@ namespace Microsoft.Data.Sqlite
         /// </summary>
         public override void Cancel()
         {
+        }
+
+        internal void UnbindDataReader()
+        {
+            _dataReader = null;
         }
 
         private IEnumerable<sqlite3_stmt> PrepareAndEnumerateStatements()

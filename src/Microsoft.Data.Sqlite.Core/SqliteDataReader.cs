@@ -173,6 +173,8 @@ namespace Microsoft.Data.Sqlite
         /// </param>
         protected override void Dispose(bool disposing)
         {
+            _command.UnbindDataReader();
+
             if (!disposing)
             {
                 return;
