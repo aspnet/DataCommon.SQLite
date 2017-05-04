@@ -513,14 +513,10 @@ namespace Microsoft.Data.Sqlite
         private IEnumerable<sqlite3_stmt> PrepareAndEnumerateStatements()
         {
             var tail = _commandText;
+            sqlite3_stmt stmt;
             do
             {
-                var rc = raw.sqlite3_prepare_v2(
-                    _connection.Handle,
-                    tail,
-                    out sqlite3_stmt stmt,
-                    out tail);
-                SqliteException.ThrowExceptionForRC(rc, _connection.Handle);
+                (stmt, tail) = _connection.PrepareStatement(tail);
 
                 // Statement was empty, white space, or a comment
                 if (stmt.ptr == IntPtr.Zero)
@@ -539,7 +535,7 @@ namespace Microsoft.Data.Sqlite
             }
             while (!string.IsNullOrEmpty(tail));
         }
-
+        
         private IEnumerable<sqlite3_stmt> ResetAndEnumerateStatements()
         {
             foreach (var stmt in _preparedStatements)
@@ -554,7 +550,7 @@ namespace Microsoft.Data.Sqlite
         {
             foreach (var stmt in _preparedStatements)
             {
-                stmt.Dispose();
+                _connection.DisposeStatement(stmt);
             }
 
             _preparedStatements.Clear();

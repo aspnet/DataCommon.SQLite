@@ -24,6 +24,7 @@ namespace Microsoft.Data.Sqlite
         private const string MainDatabaseName = "main";
 
         private readonly IList<WeakReference<SqliteCommand>> _commands = new List<WeakReference<SqliteCommand>>();
+        private readonly IList<WeakReference<sqlite3_stmt>> _statements = new List<WeakReference<sqlite3_stmt>>();
 
         private string _connectionString;
         private ConnectionState _state;
@@ -239,6 +240,16 @@ namespace Microsoft.Data.Sqlite
 
             _commands.Clear();
 
+            foreach (var reference in _statements)
+            {
+                if (reference.TryGetTarget(out var stmt))
+                {
+                    stmt.Dispose();
+                }
+            }
+
+            _statements.Clear();
+
             var rc = raw.sqlite3_close(_db);
 #if DEBUG
             SqliteException.ThrowExceptionForRC(rc, _db);
@@ -384,6 +395,36 @@ namespace Microsoft.Data.Sqlite
 
             var rc = raw.sqlite3_enable_load_extension(_db, enable ? 1 : 0);
             SqliteException.ThrowExceptionForRC(rc, _db);
+        }
+
+        internal (sqlite3_stmt stmt, string tail) PrepareStatement(string sql)
+        {
+            var rc = raw.sqlite3_prepare_v2(
+                _db,
+                sql,
+                out var stmt,
+                out var tail);
+            SqliteException.ThrowExceptionForRC(rc, _db);
+
+            if (stmt.ptr != IntPtr.Zero)
+            {
+                _statements.Add(new WeakReference<sqlite3_stmt>(stmt));
+            }
+
+            return (stmt, tail);
+        }
+
+        internal void DisposeStatement(sqlite3_stmt stmt)
+        {
+            for (var i = _statements.Count - 1; i >= 0; i--)
+            {
+                if (!_statements[i].TryGetTarget(out var item) || item == stmt)
+                {
+                    _statements.RemoveAt(i);
+                }
+            }
+
+            stmt.Dispose();
         }
     }
 }
