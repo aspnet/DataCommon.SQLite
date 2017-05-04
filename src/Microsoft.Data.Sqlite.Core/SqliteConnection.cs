@@ -239,7 +239,6 @@ namespace Microsoft.Data.Sqlite
 
             _commands.Clear();
 
-
             var rc = raw.sqlite3_close(_db);
 #if DEBUG
             SqliteException.ThrowExceptionForRC(rc, _db);

@@ -281,10 +281,12 @@ namespace Microsoft.Data.Sqlite
             var changes = 0;
             int rc;
             var stmts = new Queue<(sqlite3_stmt, bool)>();
+            var enumeration =
+                _preparedStatements.Count == 0 ?
+                PrepareAndEnumerateStatements() :
+                ResetAndEnumerateStatements();
 
-            foreach (var stmt in _preparedStatements.Count == 0
-                ? PrepareAndEnumerateStatements()
-                : ResetAndEnumerateStatements())
+            foreach (var stmt in enumeration)
             {
                 var boundParams = 0;
 
