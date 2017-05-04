@@ -10,7 +10,6 @@ using System.Globalization;
 using System.Text;
 using Microsoft.Data.Sqlite.Properties;
 using SQLitePCL;
-using System.Text;
 
 namespace Microsoft.Data.Sqlite
 {
