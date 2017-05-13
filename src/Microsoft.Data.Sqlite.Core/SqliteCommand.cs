@@ -21,6 +21,9 @@ namespace Microsoft.Data.Sqlite
     {
         private readonly Lazy<SqliteParameterCollection> _parameters = new Lazy<SqliteParameterCollection>(
             () => new SqliteParameterCollection());
+        private readonly ICollection<sqlite3_stmt> _preparedStatements = new List<sqlite3_stmt>();
+        private SqliteConnection _connection;
+        private string _commandText;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteCommand" /> class.
@@ -76,13 +79,50 @@ namespace Microsoft.Data.Sqlite
         /// Gets or sets the SQL to execute against the database.
         /// </summary>
         /// <value>The SQL to execute against the database.</value>
-        public override string CommandText { get; set; }
+        public override string CommandText
+        {
+            get => _commandText;
+            set
+            {
+                if (!value.Equals(_commandText))
+                {
+                   if (DataReader != null)
+                   {
+                       // TODO: Resource
+                       throw new InvalidOperationException("An open data reader is associated with this command. Close it before changing the CommandText property.");
+                   }
+
+                    DisposePreparedStatements();
+                    _commandText = value;
+                }
+            }
+        }
 
         /// <summary>
         /// Gets or sets the connection used by the command.
         /// </summary>
         /// <value>The connection used by the command.</value>
-        public new virtual SqliteConnection Connection { get; set; }
+        public new virtual SqliteConnection Connection
+        {
+            get => _connection;
+            set
+            {
+                if (value != _connection)
+                {
+                    if (DataReader != null)
+                    {
+                        // TODO: Resource
+                        throw new InvalidOperationException("An open data reader is associated with this command. Close it before changing the Connection property.");
+                    }
+
+                    DisposePreparedStatements();
+
+                    _connection?.RemoveCommand(this);
+                    _connection = value;
+                    value?.AddCommand(this);
+                }
+            }
+        }
 
         /// <summary>
         /// Gets or sets the connection used by the command. Must be a <see cref="SqliteConnection" />.
@@ -146,6 +186,21 @@ namespace Microsoft.Data.Sqlite
         public override UpdateRowSource UpdatedRowSource { get; set; }
 
         /// <summary>
+        /// Gets or sets the data reader currently being used by the command, or null if none.
+        /// </summary>
+        /// <value>The data reader currently being used by the command.</value>
+        protected internal virtual SqliteDataReader DataReader { get; set; }
+
+        /// <summary>
+        /// Releases any resources used by the connection and closes it.
+        /// </summary>
+        /// <param name="disposing">
+        /// true to release managed and unmanaged resources; false to release only unmanaged resources.
+        /// </param>
+        protected override void Dispose(bool disposing)
+            => DisposePreparedStatements(disposing);
+
+        /// <summary>
         /// Creates a new parameter.
         /// </summary>
         /// <returns>The new parameter.</returns>
@@ -164,6 +219,27 @@ namespace Microsoft.Data.Sqlite
         /// </summary>
         public override void Prepare()
         {
+            if (_connection?.State != ConnectionState.Open)
+            {
+                throw new InvalidOperationException(Resources.CallRequiresOpenConnection(nameof(Prepare)));
+            }
+
+            if (string.IsNullOrEmpty(_commandText))
+            {
+                throw new InvalidOperationException(Resources.CallRequiresSetCommandText(nameof(Prepare)));
+            }
+
+            if (_preparedStatements.Count != 0)
+            {
+                return;
+            }
+
+            using (var enumerator = PrepareAndEnumerateStatements().GetEnumerator())
+            {
+                while (enumerator.MoveNext())
+                {
+                }
+            }
         }
 
         /// <summary>
@@ -193,17 +269,22 @@ namespace Microsoft.Data.Sqlite
                 throw new ArgumentException(Resources.InvalidCommandBehavior(behavior));
             }
 
-            if (Connection?.State != ConnectionState.Open)
+            if (DataReader != null)
+            {
+                throw new InvalidOperationException(Resources.DataReaderOpen);
+            }
+
+            if (_connection?.State != ConnectionState.Open)
             {
                 throw new InvalidOperationException(Resources.CallRequiresOpenConnection(nameof(ExecuteReader)));
             }
 
-            if (string.IsNullOrEmpty(CommandText))
+            if (string.IsNullOrEmpty(_commandText))
             {
                 throw new InvalidOperationException(Resources.CallRequiresSetCommandText(nameof(ExecuteReader)));
             }
 
-            if (Transaction != Connection.Transaction)
+            if (Transaction != _connection.Transaction)
             {
                 throw new InvalidOperationException(
                     Transaction == null
@@ -213,33 +294,17 @@ namespace Microsoft.Data.Sqlite
 
             // This is not a guarantee. SQLITE_BUSY can still be thrown before the command timeout.
             // This sets a timeout handler but this can be cleared by concurrent commands.
-            raw.sqlite3_busy_timeout(Connection.Handle, CommandTimeout * 1000);
+            raw.sqlite3_busy_timeout(_connection.Handle, CommandTimeout * 1000);
 
             var hasChanges = false;
             var changes = 0;
+            int rc;
             var stmts = new Queue<(sqlite3_stmt, bool)>();
-            var tail = CommandText;
 
-            do
+            foreach (var stmt in _preparedStatements.Count == 0
+                ? PrepareAndEnumerateStatements()
+                : _preparedStatements)
             {
-                var rc = raw.sqlite3_prepare_v2(
-                        Connection.Handle,
-                        tail,
-                        out var stmt,
-                        out tail);
-                SqliteException.ThrowExceptionForRC(rc, Connection.Handle);
-
-                // Statement was empty, white space, or a comment
-                if (stmt.ptr == IntPtr.Zero)
-                {
-                    if (!string.IsNullOrEmpty(tail))
-                    {
-                        continue;
-                    }
-
-                    break;
-                }
-
                 var boundParams = 0;
 
                 if (_parameters.IsValueCreated)
@@ -266,31 +331,23 @@ namespace Microsoft.Data.Sqlite
                     throw new InvalidOperationException(Resources.MissingParameters(string.Join(", ", unboundParams)));
                 }
 
-                try
+                var timer = Stopwatch.StartNew();
+                while (raw.SQLITE_LOCKED == (rc = raw.sqlite3_step(stmt)) || rc == raw.SQLITE_BUSY)
                 {
-                    var timer = Stopwatch.StartNew();
-                    while (raw.SQLITE_LOCKED == (rc = raw.sqlite3_step(stmt)) || rc == raw.SQLITE_BUSY)
+                    if (timer.ElapsedMilliseconds >= CommandTimeout * 1000)
                     {
-                        if (timer.ElapsedMilliseconds >= CommandTimeout * 1000)
-                        {
-                            break;
-                        }
-
-                        raw.sqlite3_reset(stmt);
-
-#if NET451
-                        // TODO: Consider having an async path that uses Task.Delay()
-                        Thread.Sleep(150);
-#endif
+                        break;
                     }
 
-                    SqliteException.ThrowExceptionForRC(rc, Connection.Handle);
+                    raw.sqlite3_reset(stmt);
+
+#if NET451
+                    // TODO: Consider having an async path that uses Task.Delay()
+                    Thread.Sleep(150);
+#endif
                 }
-                catch
-                {
-                    stmt.Dispose();
-                    throw;
-                }
+
+                SqliteException.ThrowExceptionForRC(rc, _connection.Handle);
 
                 if (rc == raw.SQLITE_ROW
                     // NB: This is only a heuristic to separate SELECT statements from INSERT/UPDATE/DELETE statements.
@@ -302,15 +359,13 @@ namespace Microsoft.Data.Sqlite
                 else
                 {
                     hasChanges = true;
-                    changes += raw.sqlite3_changes(Connection.Handle);
-                    stmt.Dispose();
+                    changes += raw.sqlite3_changes(_connection.Handle);
                 }
             }
-            while (!string.IsNullOrEmpty(tail));
 
             var closeConnection = (behavior & CommandBehavior.CloseConnection) != 0;
 
-            return new SqliteDataReader(Connection, stmts, hasChanges ? changes : -1, closeConnection);
+            return DataReader = new SqliteDataReader(this, stmts, hasChanges ? changes : -1, closeConnection);
         }
 
         /// <summary>
@@ -393,11 +448,11 @@ namespace Microsoft.Data.Sqlite
         /// <exception cref="SqliteException">A SQLite error occurs during execution.</exception>
         public override int ExecuteNonQuery()
         {
-            if (Connection?.State != ConnectionState.Open)
+            if (_connection?.State != ConnectionState.Open)
             {
                 throw new InvalidOperationException(Resources.CallRequiresOpenConnection(nameof(ExecuteNonQuery)));
             }
-            if (CommandText == null)
+            if (_commandText == null)
             {
                 throw new InvalidOperationException(Resources.CallRequiresSetCommandText(nameof(ExecuteNonQuery)));
             }
@@ -415,11 +470,11 @@ namespace Microsoft.Data.Sqlite
         /// <exception cref="SqliteException">A SQLite error occurs during execution.</exception>
         public override object ExecuteScalar()
         {
-            if (Connection?.State != ConnectionState.Open)
+            if (_connection?.State != ConnectionState.Open)
             {
                 throw new InvalidOperationException(Resources.CallRequiresOpenConnection(nameof(ExecuteScalar)));
             }
-            if (CommandText == null)
+            if (_commandText == null)
             {
                 throw new InvalidOperationException(Resources.CallRequiresSetCommandText(nameof(ExecuteScalar)));
             }
@@ -437,6 +492,57 @@ namespace Microsoft.Data.Sqlite
         /// </summary>
         public override void Cancel()
         {
+        }
+
+        private IEnumerable<sqlite3_stmt> PrepareAndEnumerateStatements()
+        {
+            var tail = _commandText;
+            do
+            {
+                var rc = raw.sqlite3_prepare_v2(
+                    _connection.Handle,
+                    tail,
+                    out sqlite3_stmt stmt,
+                    out tail);
+                SqliteException.ThrowExceptionForRC(rc, _connection.Handle);
+
+                // Statement was empty, white space, or a comment
+                if (stmt.ptr == IntPtr.Zero)
+                {
+                    if (!string.IsNullOrEmpty(tail))
+                    {
+                        continue;
+                    }
+
+                    break;
+                }
+
+                _preparedStatements.Add(stmt);
+
+                yield return stmt;
+            }
+            while (!string.IsNullOrEmpty(tail));
+        }
+
+        private void DisposePreparedStatements(bool disposing = true)
+        {
+            foreach (var stmt in _preparedStatements)
+            {
+                stmt.Dispose();
+            }
+
+            _preparedStatements.Clear();
+
+            if (!disposing)
+            {
+                return;
+            }
+
+            if (DataReader != null)
+            {
+                DataReader.Dispose();
+                DataReader = null;
+            }
         }
     }
 }
