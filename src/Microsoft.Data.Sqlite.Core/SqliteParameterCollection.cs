@@ -320,7 +320,7 @@ namespace Microsoft.Data.Sqlite
         protected override void SetParameter(string parameterName, DbParameter value)
             => SetParameter(IndexOfChecked(parameterName), value);
 
-        internal int Bind(sqlite3_stmt stmt)
+        internal int Bind(SqliteStatement stmt)
         {
             var bound = 0;
             foreach (var parameter in _parameters)

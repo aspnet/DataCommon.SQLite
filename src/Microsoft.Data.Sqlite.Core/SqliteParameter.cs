@@ -189,7 +189,7 @@ namespace Microsoft.Data.Sqlite
             SqliteType = SqliteType.Text;
         }
 
-        internal bool Bind(sqlite3_stmt stmt)
+        internal bool Bind(SqliteStatement stmt)
         {
             if (_parameterName.Length == 0)
             {
@@ -262,8 +262,16 @@ namespace Microsoft.Data.Sqlite
                 }
                 else if (type == typeof(Guid))
                 {
-                    var value = ((Guid)_value).ToByteArray();
-                    _bindAction = (s, i) => BindBlob(s, i, value);
+                    if (stmt.BinaryGUID)
+                    {
+                        var value = ((Guid)_value).ToByteArray();
+                        _bindAction = (s, i) => BindBlob(s, i, value);
+                    }
+                    else
+                    {
+                        var value = ((Guid)_value).ToString();
+                        _bindAction = (s, i) => BindText(s, i, value);
+                    }
                 }
                 else if (type == typeof(int))
                 {

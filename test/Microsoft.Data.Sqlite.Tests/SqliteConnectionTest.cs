@@ -312,6 +312,60 @@ namespace Microsoft.Data.Sqlite
         }
 
         [Fact]
+        public void BinaryGUID_true_works()
+        {
+            using (var connection = new SqliteConnection("Data Source=:memory:;BinaryGUID=true"))
+            {
+                connection.Open();
+                connection.ExecuteNonQuery("CREATE TABLE Test(Value);");
+
+                var command = connection.CreateCommand();
+                command.CommandText = "INSERT INTO Test VALUES(@p1);";
+
+                var guid = new Guid("1c902ddb-f4b6-4945-af38-0dc1b0760465");
+                command.Parameters.AddWithValue("@p1", guid);
+                Assert.Equal(1, command.ExecuteNonQuery());
+
+                command.CommandText = "SELECT Value FROM Test;";
+                using (var reader = command.ExecuteReader())
+                {
+                    var hasData = reader.Read();
+                    Assert.True(hasData);
+
+                    Assert.Equal("BLOB", reader.GetDataTypeName(0));
+                    Assert.Equal(new byte[] { 0xDB, 0x2D, 0x90, 0x1C, 0xB6, 0xF4, 0x45, 0x49, 0xAF, 0x38, 0x0D, 0xC1, 0xB0, 0x76, 0x04, 0x65 }, reader.GetBlob(0));
+                }
+            }
+        }
+
+        [Fact]
+        public void BinaryGUID_false_works()
+        {
+            using (var connection = new SqliteConnection("Data Source=:memory:;BinaryGUID=false"))
+            {
+                connection.Open();
+                connection.ExecuteNonQuery("CREATE TABLE Test(Value);");
+
+                var command = connection.CreateCommand();
+                command.CommandText = "INSERT INTO Test VALUES(@p1);";
+
+                var guid = new Guid("1c902ddb-f4b6-4945-af38-0dc1b0760465");
+                command.Parameters.AddWithValue("@p1", guid);
+                Assert.Equal(1, command.ExecuteNonQuery());
+
+                command.CommandText = "SELECT Value FROM Test;";
+                using (var reader = command.ExecuteReader())
+                {
+                    var hasData = reader.Read();
+                    Assert.True(hasData);
+
+                    Assert.Equal("TEXT", reader.GetDataTypeName(0));
+                    Assert.Equal("1c902ddb-f4b6-4945-af38-0dc1b0760465", reader.GetString(0));
+                }
+            }
+        }
+
+        [Fact]
         public void CreateCollation_works()
         {
             using (var connection = new SqliteConnection("Data Source=:memory:"))

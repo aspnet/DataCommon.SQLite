@@ -24,12 +24,16 @@ namespace Microsoft.Data.Sqlite
         private const string ModeKeyword = "Mode";
         private const string CacheKeyword = "Cache";
         private const string FilenameKeyword = "Filename";
+        private const string BinaryGUIDKeyword = "BinaryGUID";
+
+        private const bool BinaryGUIDDefault = true;
 
         private enum Keywords
         {
             DataSource,
             Mode,
-            Cache
+            Cache,
+            BinaryGUID
         }
 
         private static readonly IReadOnlyList<string> _validKeywords;
@@ -38,20 +42,23 @@ namespace Microsoft.Data.Sqlite
         private string _dataSource = string.Empty;
         private SqliteOpenMode _mode = SqliteOpenMode.ReadWriteCreate;
         private SqliteCacheMode _cache = SqliteCacheMode.Default;
+        private bool _binaryGUID = BinaryGUIDDefault;
 
         static SqliteConnectionStringBuilder()
         {
-            var validKeywords = new string[3];
+            var validKeywords = new string[4];
             validKeywords[(int)Keywords.DataSource] = DataSourceKeyword;
             validKeywords[(int)Keywords.Mode] = ModeKeyword;
             validKeywords[(int)Keywords.Cache] = CacheKeyword;
+            validKeywords[(int)Keywords.BinaryGUID] = BinaryGUIDKeyword;
             _validKeywords = validKeywords;
 
-            _keywords = new Dictionary<string, Keywords>(3, StringComparer.OrdinalIgnoreCase)
+            _keywords = new Dictionary<string, Keywords>(4, StringComparer.OrdinalIgnoreCase)
             {
                 [DataSourceKeyword] = Keywords.DataSource,
                 [ModeKeyword] = Keywords.Mode,
                 [CacheKeyword] = Keywords.Cache,
+                [BinaryGUIDKeyword] = Keywords.BinaryGUID,
 
                 // aliases
                 [FilenameKeyword] = Keywords.DataSource,
@@ -132,6 +139,16 @@ namespace Microsoft.Data.Sqlite
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether GUIDs are stored in binary form.
+        /// </summary>
+        /// <value>A value indicating whether GUIDs are stored in binary form.</value>
+        public virtual bool BinaryGUID
+        {
+            get => _binaryGUID;
+            set => base[CacheKeyword] = _binaryGUID = value;
+        }
+
+        /// <summary>
         /// Gets or sets the value associated with the specified key.
         /// </summary>
         /// <param name="keyword">The key.</param>
@@ -160,6 +177,10 @@ namespace Microsoft.Data.Sqlite
 
                     case Keywords.Cache:
                         Cache = ConvertToEnum<SqliteCacheMode>(keyword, value);
+                        return;
+
+                    case Keywords.BinaryGUID:
+                        BinaryGUID = Convert.ToBoolean(value, CultureInfo.InvariantCulture);
                         return;
 
                     default:
@@ -281,6 +302,9 @@ namespace Microsoft.Data.Sqlite
                 case Keywords.Cache:
                     return Cache;
 
+                case Keywords.BinaryGUID:
+                    return BinaryGUID;
+
                 default:
                     Debug.Assert(false, "Unexpected keyword: " + index);
                     return null;
@@ -306,6 +330,10 @@ namespace Microsoft.Data.Sqlite
 
                 case Keywords.Cache:
                     _cache = SqliteCacheMode.Default;
+                    return;
+
+                case Keywords.BinaryGUID:
+                    _binaryGUID = BinaryGUIDDefault;
                     return;
 
                 default:

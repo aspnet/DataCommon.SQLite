@@ -92,10 +92,11 @@ namespace Microsoft.Data.Sqlite
             var keys = (ICollection<string>)new SqliteConnectionStringBuilder().Keys;
 
             Assert.True(keys.IsReadOnly);
-            Assert.Equal(3, keys.Count);
+            Assert.Equal(4, keys.Count);
             Assert.Contains("Data Source", keys);
             Assert.Contains("Mode", keys);
             Assert.Contains("Cache", keys);
+            Assert.Contains("BinaryGUID", keys);
         }
 
         [Fact]
@@ -104,7 +105,7 @@ namespace Microsoft.Data.Sqlite
             var values = (ICollection<object>)new SqliteConnectionStringBuilder().Values;
 
             Assert.True(values.IsReadOnly);
-            Assert.Equal(3, values.Count);
+            Assert.Equal(4, values.Count);
         }
 
         [Fact]
