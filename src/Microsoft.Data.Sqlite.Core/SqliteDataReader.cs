@@ -20,9 +20,9 @@ namespace Microsoft.Data.Sqlite
     {
         private static readonly byte[] _emptyByteArray = new byte[0];
 
-        private readonly SqliteConnection _connection;
+        private readonly SqliteCommand _command;
         private readonly bool _closeConnection;
-        private readonly Queue<(sqlite3_stmt stmt, bool)> _stmtQueue;
+        private readonly Queue<(sqlite3_stmt, bool)> _stmtQueue;
         private sqlite3_stmt _stmt;
         private bool _hasRows;
         private bool _stepped;
@@ -30,7 +30,7 @@ namespace Microsoft.Data.Sqlite
         private bool _closed;
 
         internal SqliteDataReader(
-            SqliteConnection connection,
+            SqliteCommand command,
             Queue<(sqlite3_stmt, bool)> stmtQueue,
             int recordsAffected,
             bool closeConnection)
@@ -40,7 +40,7 @@ namespace Microsoft.Data.Sqlite
                 (_stmt, _hasRows) = stmtQueue.Dequeue();
             }
 
-            _connection = connection;
+            _command = command;
             _stmtQueue = stmtQueue;
             RecordsAffected = recordsAffected;
             _closeConnection = closeConnection;
@@ -132,7 +132,7 @@ namespace Microsoft.Data.Sqlite
             }
 
             var rc = raw.sqlite3_step(_stmt);
-            SqliteException.ThrowExceptionForRC(rc, _connection.Handle);
+            SqliteException.ThrowExceptionForRC(rc, _command.Connection.Handle);
 
             _done = rc == raw.SQLITE_DONE;
 
@@ -149,8 +149,6 @@ namespace Microsoft.Data.Sqlite
             {
                 return false;
             }
-
-            _stmt.Dispose();
 
             (_stmt, _hasRows) = _stmtQueue.Dequeue();
             _stepped = false;
@@ -173,16 +171,7 @@ namespace Microsoft.Data.Sqlite
         /// </param>
         protected override void Dispose(bool disposing)
         {
-            if (_stmt != null)
-            {
-                _stmt.Dispose();
-                _stmt = null;
-            }
-
-            while (_stmtQueue.Count != 0)
-            {
-                _stmtQueue.Dequeue().stmt.Dispose();
-            }
+            _command.UnbindDataReader();
 
             if (!disposing)
             {
@@ -193,7 +182,7 @@ namespace Microsoft.Data.Sqlite
 
             if (_closeConnection)
             {
-                _connection.Close();
+                _command.Connection.Close();
             }
         }
 
