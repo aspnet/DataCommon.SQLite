@@ -322,6 +322,11 @@ namespace Microsoft.Data.Sqlite
                     ? PrepareAndEnumerateStatements()
                     : _preparedStatements)
                 {
+                    if (!unprepared)
+                    {
+                        raw.sqlite3_reset(stmt);
+                    }
+
                     var boundParams = 0;
 
                     if (_parameters.IsValueCreated)

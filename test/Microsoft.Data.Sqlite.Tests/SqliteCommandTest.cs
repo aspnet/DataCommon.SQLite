@@ -171,6 +171,63 @@ namespace Microsoft.Data.Sqlite
         }
 
         [Fact]
+        public void Multiple_command_executes_works()
+            => Multiple_command_executes_works((SqliteCommand command) =>
+            {
+                command.CommandText = string.Empty;
+                command.CommandText = "INSERT INTO Data (Value) VALUES (@value);";
+            });
+
+        [Fact]
+        public void Multiple_command_executes_works_2()
+            => Multiple_command_executes_works((SqliteCommand command) =>
+            {
+                command.CommandText = "INSERT INTO Data (Value) VALUES (@value);";
+            });
+
+        [Fact]
+        public void Multiple_command_executes_works_3()
+            => Multiple_command_executes_works((SqliteCommand command) => { });
+
+        private void Multiple_command_executes_works(Action<SqliteCommand> action)
+        {
+            const int INSERTS = 3;
+
+            using (var connection = new SqliteConnection("Data Source=:memory:"))
+            {
+                connection.Open();
+
+                using (var command = connection.CreateCommand())
+                {
+                    command.CommandText = "CREATE TABLE Data (ID integer PRIMARY KEY, Value integer);";
+                    command.ExecuteNonQuery();
+
+                    command.CommandText = "INSERT INTO Data (Value) VALUES (@value);";
+                    var valueParam = new SqliteParameter { ParameterName = "@value" };
+                    command.Parameters.Add(valueParam);
+
+                    for (var i = 0; i < INSERTS; i++)
+                    {
+                        action(command);
+
+                        valueParam.Value = i;
+                        Assert.Equal(1, command.ExecuteNonQuery());
+                    }
+
+                    command.CommandText = "SELECT Value FROM Data";
+                    using (var reader = command.ExecuteReader())
+                    {
+                        for (var i = 0; i < INSERTS; i++)
+                        {
+                            Assert.True(reader.Read());
+                            Assert.Equal(i, reader.GetInt32(0));
+                        }
+                    }
+                }
+            }
+        }
+
+        [Fact]
         public void ExecuteReader_throws_when_no_connection()
         {
             var ex = Assert.Throws<InvalidOperationException>(() => new SqliteCommand().ExecuteReader());
