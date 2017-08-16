@@ -178,15 +178,12 @@ namespace Microsoft.Data.Sqlite
             using (var connection = new SqliteConnection("Data Source=:memory:"))
             {
                 connection.Open();
+                connection.ExecuteNonQuery("CREATE TABLE Data (ID integer PRIMARY KEY, Value integer);");
 
                 using (var command = connection.CreateCommand())
                 {
-                    command.CommandText = "CREATE TABLE Data (ID integer PRIMARY KEY, Value integer);";
-                    command.ExecuteNonQuery();
-
                     command.CommandText = "INSERT INTO Data (Value) VALUES (@value);";
-                    var valueParam = new SqliteParameter { ParameterName = "@value", Value = -1 };
-                    command.Parameters.Add(valueParam);
+                    var valueParam = command.Parameters.AddWithValue("@value", -1);
 
                     Assert.Equal(1, command.ExecuteNonQuery());
 
