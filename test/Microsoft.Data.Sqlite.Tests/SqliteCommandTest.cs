@@ -171,25 +171,7 @@ namespace Microsoft.Data.Sqlite
         }
 
         [Fact]
-        public void Multiple_command_executes_works()
-            => Multiple_command_executes_works((SqliteCommand command) =>
-            {
-                command.CommandText = string.Empty;
-                command.CommandText = "INSERT INTO Data (Value) VALUES (@value);";
-            });
-
-        [Fact]
-        public void Multiple_command_executes_works_2()
-            => Multiple_command_executes_works((SqliteCommand command) =>
-            {
-                command.CommandText = "INSERT INTO Data (Value) VALUES (@value);";
-            });
-
-        [Fact]
-        public void Multiple_command_executes_works_3()
-            => Multiple_command_executes_works((SqliteCommand command) => { });
-
-        private void Multiple_command_executes_works(Action<SqliteCommand> action)
+        private void Multiple_command_executes_works()
         {
             const int INSERTS = 3;
 
@@ -203,25 +185,33 @@ namespace Microsoft.Data.Sqlite
                     command.ExecuteNonQuery();
 
                     command.CommandText = "INSERT INTO Data (Value) VALUES (@value);";
-                    var valueParam = new SqliteParameter { ParameterName = "@value" };
+                    var valueParam = new SqliteParameter { ParameterName = "@value", Value = -1 };
                     command.Parameters.Add(valueParam);
+
+                    Assert.Equal(1, command.ExecuteNonQuery());
 
                     for (var i = 0; i < INSERTS; i++)
                     {
-                        action(command);
-
                         valueParam.Value = i;
                         Assert.Equal(1, command.ExecuteNonQuery());
                     }
+                    
+                    Assert.Equal(1, command.ExecuteNonQuery());
 
-                    command.CommandText = "SELECT Value FROM Data";
+                    command.CommandText = "SELECT Value FROM Data ORDER BY ID";
                     using (var reader = command.ExecuteReader())
                     {
+                        Assert.True(reader.Read());
+                        Assert.Equal(-1, reader.GetInt32(0));
+
                         for (var i = 0; i < INSERTS; i++)
                         {
                             Assert.True(reader.Read());
                             Assert.Equal(i, reader.GetInt32(0));
                         }
+
+                        Assert.True(reader.Read());
+                        Assert.Equal(INSERTS - 1, reader.GetInt32(0));
                     }
                 }
             }
