@@ -215,7 +215,11 @@ namespace Microsoft.Data.Sqlite
 
             SetState(ConnectionState.Open);
 
-            raw.sqlite3_update_hook(_db, UpdateHook, null);
+            raw.sqlite3_update_hook(
+                _db,
+                (_, type, database, table, rowid)
+                => OnUpdate(new UpdateEventArgs((UpdateEventType)type, database, table, rowid)),
+                null);
         }
 
         /// <summary>
@@ -391,23 +395,5 @@ namespace Microsoft.Data.Sqlite
         /// <param name="e">A Microsoft.Data.Sqlite.UpdateEventArgs that contains the event data.</param>
         protected virtual void OnUpdate(UpdateEventArgs e)
             => Update?.Invoke(this, e);
-
-        private void UpdateHook(object user_data, int type, string database, string table, long rowid)
-            => OnUpdate(new UpdateEventArgs(ConvertToUpdateEventType(type), database, table, rowid));
-
-        private UpdateEventType ConvertToUpdateEventType(int type)
-        {
-            switch (type)
-            {
-                case raw.SQLITE_INSERT:
-                    return UpdateEventType.Insert;
-                case raw.SQLITE_DELETE:
-                    return UpdateEventType.Delete;
-                case raw.SQLITE_UPDATE:
-                    return UpdateEventType.Update;
-                default:
-                    return UpdateEventType.Unknown;
-            }
-        }
     }
 }

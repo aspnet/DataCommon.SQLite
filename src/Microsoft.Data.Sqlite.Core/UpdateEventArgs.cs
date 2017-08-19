@@ -57,30 +57,4 @@ namespace Microsoft.Data.Sqlite
         /// </value>
         public long RowId { get; }
     }
-
-    /// <summary>
-    /// Represents the event that changed the table data.
-    /// </summary>
-    public enum UpdateEventType
-    {
-        /// <summary>
-        /// Unknow event.
-        /// </summary>
-        Unknown,
-
-        /// <summary>
-        /// Row was updated.
-        /// </summary>
-        Update,
-
-        /// <summary>
-        /// Row was deleted.
-        /// </summary>
-        Delete,
-
-        /// <summary>
-        /// Row was inserted.
-        /// </summary>
-        Insert
-    }
 }
