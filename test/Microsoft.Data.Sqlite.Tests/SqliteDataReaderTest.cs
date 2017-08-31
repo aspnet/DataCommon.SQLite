@@ -968,7 +968,7 @@ namespace Microsoft.Data.Sqlite
                     Assert.False((bool)schema.Rows[0]["IsAliased"]);
                     Assert.False((bool)schema.Rows[0]["IsExpression"]);
                     Assert.False((bool)schema.Rows[0]["IsAutoIncrement"]);
-                    Assert.False((bool)schema.Rows[0]["IsLong"]);
+                    Assert.Equal(DBNull.Value, schema.Rows[0]["IsLong"]);
 
                     Assert.Equal("ID", schema.Rows[1]["ColumnName"]);
                     Assert.Equal(1, schema.Rows[1]["ColumnOrdinal"]);
@@ -984,7 +984,7 @@ namespace Microsoft.Data.Sqlite
                     Assert.False((bool)schema.Rows[1]["IsAliased"]);
                     Assert.False((bool)schema.Rows[1]["IsExpression"]);
                     Assert.False((bool)schema.Rows[1]["IsAutoIncrement"]);
-                    Assert.True((bool)schema.Rows[1]["IsLong"]);
+                    Assert.Equal(DBNull.Value, schema.Rows[1]["IsLong"]);
 
                     Assert.Equal("Code", schema.Rows[2]["ColumnName"]);
                     Assert.Equal(2, schema.Rows[2]["ColumnOrdinal"]);
@@ -1000,7 +1000,7 @@ namespace Microsoft.Data.Sqlite
                     Assert.False((bool)schema.Rows[2]["IsAliased"]);
                     Assert.False((bool)schema.Rows[2]["IsExpression"]);
                     Assert.False((bool)schema.Rows[2]["IsAutoIncrement"]);
-                    Assert.True((bool)schema.Rows[2]["IsLong"]);
+                    Assert.Equal(DBNull.Value, schema.Rows[2]["IsLong"]);
 
                     Assert.Equal("IncID", schema.Rows[3]["ColumnName"]);
                     Assert.Equal(3, schema.Rows[3]["ColumnOrdinal"]);
@@ -1016,7 +1016,7 @@ namespace Microsoft.Data.Sqlite
                     Assert.True((bool)schema.Rows[3]["IsAliased"]);
                     Assert.True((bool)schema.Rows[3]["IsExpression"]);
                     Assert.Equal(DBNull.Value, schema.Rows[3]["IsAutoIncrement"]);
-                    Assert.True((bool)schema.Rows[3]["IsLong"]);
+                    Assert.Equal(DBNull.Value, schema.Rows[3]["IsLong"]);
                 }
             }
         }

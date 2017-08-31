@@ -533,7 +533,7 @@ namespace Microsoft.Data.Sqlite
                 schemaRow[IsExpression] = raw.sqlite3_column_origin_name(_stmt, i) == null;
                 //schemaRow[IsRowVersion] = null;
                 //schemaRow[IsHidden] = null;
-                schemaRow[IsLong] = GetFieldType(i) == typeof(long);
+                schemaRow[IsLong] = DBNull.Value;
                 //schemaRow[IsReadOnly] = null;
                 //schemaRow[ProviderSpecificDataType] = null;
                 //schemaRow[NonVersionedProviderType] = null;
