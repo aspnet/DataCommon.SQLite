@@ -4,7 +4,6 @@
 using System;
 using System.Data;
 using System.Data.Common;
-using System.Globalization;
 using Microsoft.Data.Sqlite.Properties;
 using SQLitePCL;
 
@@ -21,8 +20,6 @@ namespace Microsoft.Data.Sqlite
     {
         private string _parameterName = string.Empty;
         private object _value;
-        private Action<sqlite3_stmt, int> _bindAction;
-        private bool _bindActionValid;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteParameter" /> class.
@@ -170,7 +167,6 @@ namespace Microsoft.Data.Sqlite
             set
             {
                 _value = value;
-                _bindActionValid = false;
             }
         }
 
@@ -208,135 +204,9 @@ namespace Microsoft.Data.Sqlite
                 throw new InvalidOperationException(Resources.RequiresSet(nameof(Value)));
             }
 
-            if (!_bindActionValid)
-            {
-                var type = Value.GetType().UnwrapNullableType().UnwrapEnumType();
-                if (type == typeof(bool))
-                {
-                    var value = (bool)_value ? 1L : 0;
-                    _bindAction = (s, i) => raw.sqlite3_bind_int64(s, i, value);
-                }
-                else if (type == typeof(byte))
-                {
-                    var value = (long)(byte)_value;
-                    _bindAction = (s, i) => raw.sqlite3_bind_int64(s, i, value);
-                }
-                else if (type == typeof(byte[]))
-                {
-                    var value = (byte[])_value;
-                    _bindAction = (s, i) => BindBlob(s, i, value);
-                }
-                else if (type == typeof(char))
-                {
-                    var value = (long)(char)_value;
-                    _bindAction = (s, i) => raw.sqlite3_bind_int64(s, i, value);
-                }
-                else if (type == typeof(DateTime))
-                {
-                    var value = ((DateTime)_value).ToString(@"yyyy\-MM\-dd HH\:mm\:ss.FFFFFFF");
-                    _bindAction = (s, i) => BindText(s, i, value);
-                }
-                else if (type == typeof(DateTimeOffset))
-                {
-                    var value = ((DateTimeOffset)_value).ToString(@"yyyy\-MM\-dd HH\:mm\:ss.FFFFFFFzzz");
-                    _bindAction = (s, i) => BindText(s, i, value);
-                }
-                else if (type == typeof(DBNull))
-                {
-                    _bindAction = (s, i) => raw.sqlite3_bind_null(s, i);
-                }
-                else if (type == typeof(decimal))
-                {
-                    var value = ((decimal)_value).ToString("0.0###########################", CultureInfo.InvariantCulture);
-                    _bindAction = (s, i) => BindText(s, i, value);
-                }
-                else if (type == typeof(double))
-                {
-                    var value = (double)_value;
-                    _bindAction = (s, i) => BindDouble(s, i, value);
-                }
-                else if (type == typeof(float))
-                {
-                    var value = (double)(float)_value;
-                    _bindAction = (s, i) => BindDouble(s, i, value);
-                }
-                else if (type == typeof(Guid))
-                {
-                    var value = ((Guid)_value).ToByteArray();
-                    _bindAction = (s, i) => BindBlob(s, i, value);
-                }
-                else if (type == typeof(int))
-                {
-                    var value = (long)(int)_value;
-                    _bindAction = (s, i) => raw.sqlite3_bind_int64(s, i, value);
-                }
-                else if (type == typeof(long))
-                {
-                    var value = (long)_value;
-                    _bindAction = (s, i) => raw.sqlite3_bind_int64(s, i, value);
-                }
-                else if (type == typeof(sbyte))
-                {
-                    var value = (long)(sbyte)_value;
-                    _bindAction = (s, i) => raw.sqlite3_bind_int64(s, i, value);
-                }
-                else if (type == typeof(short))
-                {
-                    var value = (long)(short)_value;
-                    _bindAction = (s, i) => raw.sqlite3_bind_int64(s, i, value);
-                }
-                else if (type == typeof(string))
-                {
-                    var value = (string)_value;
-                    _bindAction = (s, i) => BindText(s, i, value);
-                }
-                else if (type == typeof(TimeSpan))
-                {
-                    var value = ((TimeSpan)_value).ToString("c");
-                    _bindAction = (s, i) => BindText(s, i, value);
-                }
-                else if (type == typeof(uint))
-                {
-                    var value = (long)(uint)_value;
-                    _bindAction = (s, i) => raw.sqlite3_bind_int64(s, i, value);
-                }
-                else if (type == typeof(ulong))
-                {
-                    var value = (long)(ulong)_value;
-                    _bindAction = (s, i) => raw.sqlite3_bind_int64(s, i, value);
-                }
-                else if (type == typeof(ushort))
-                {
-                    var value = (long)(ushort)_value;
-                    _bindAction = (s, i) => raw.sqlite3_bind_int64(s, i, value);
-                }
-                else
-                {
-                    throw new InvalidOperationException(Resources.UnknownDataType(type));
-                }
-
-                _bindActionValid = true;
-            }
-
-            _bindAction(stmt, index);
+            new SqliteParameterBinder(stmt, index, _value).Bind();
 
             return true;
-        }
-
-        private static void BindBlob(sqlite3_stmt stmt, int index, byte[] value)
-            => raw.sqlite3_bind_blob(stmt, index, value);
-
-        private static void BindText(sqlite3_stmt stmt, int index, string value)
-            => raw.sqlite3_bind_text(stmt, index, value);
-
-        private static void BindDouble(sqlite3_stmt stmt, int index, double value)
-        {
-            if (double.IsNaN(value))
-            {
-                throw new InvalidOperationException(Resources.CannotStoreNaN);
-            }
-
-            raw.sqlite3_bind_double(stmt, index, value);
         }
 
         private readonly static char[] _parameterPrefixes = { '@', '$', ':' };

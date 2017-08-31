@@ -1,7 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="..\..\build\common.props" />
-
   <PropertyGroup>
     <Description>SQLite implementation of the System.Data.Common provider model.
 
@@ -20,7 +18,7 @@ Microsoft.Data.Sqlite.SqliteTransaction</Description>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="SQLitePCLRaw.bundle_green" Version="$(SQLitePCLRawVersion)">
+    <PackageReference Include="SQLitePCLRaw.bundle_green">
       <PrivateAssets>None</PrivateAssets>
     </PackageReference>
   </ItemGroup>

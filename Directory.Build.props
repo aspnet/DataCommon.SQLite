@@ -1,22 +1,23 @@
-<Project>
+﻿<Project>
 
-  <Import Project="dependencies.props" />
-  <Import Project="..\version.xml" />
+  <Import Project="version.xml" />
 
   <PropertyGroup>
     <Product>Microsoft .NET</Product>
     <RepositoryUrl>https://github.com/aspnet/Microsoft.Data.Sqlite.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)Key.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)build\Key.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
     <PublicSign Condition="'$(OS)' != 'Windows_NT'">true</PublicSign>
     <VersionSuffix Condition="'$(VersionSuffix)' != '' And '$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
     <PackageTags>SQLite;Data;ADO.NET</PackageTags>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- Suppress bugs in analyzers, such as https://github.com/xunit/xunit/issues/1409 -->
+    <NoWarn>$(NoWarn);AD0001</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Internal.AspNetCore.Sdk" Version="$(InternalAspNetCoreSdkVersion)" PrivateAssets="All" />
+    <PackageReference Include="Internal.AspNetCore.Sdk" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>

@@ -395,5 +395,164 @@ namespace Microsoft.Data.Sqlite
         /// <param name="e">A Microsoft.Data.Sqlite.UpdateEventArgs that contains the event data.</param>
         protected virtual void OnUpdate(UpdateEventArgs e)
             => Update?.Invoke(this, e);
+
+        private void CreateFunctionCore<TState, TResult>(
+            string name,
+            int arity,
+            TState state,
+            Func<TState, SqliteValueReader, TResult> function)
+        {
+            if (string.IsNullOrEmpty(name))
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            if (State != ConnectionState.Open)
+            {
+                throw new InvalidOperationException(Resources.CallRequiresOpenConnection(nameof(CreateFunction)));
+            }
+
+            delegate_function_scalar func = null;
+            if (function != null)
+            {
+                func = (ctx, user_data, args) =>
+                {
+                    // TODO: Avoid allocation when niladic
+                    var values = new SqliteParameterReader(args);
+
+                    try
+                    {
+                        // TODO: Avoid closure by passing function via user_data
+                        var result = function((TState)user_data, values);
+
+                        new SqliteResultBinder(ctx, result).Bind();
+                    }
+                    catch (Exception ex)
+                    {
+                        raw.sqlite3_result_error(ctx, ex.Message);
+
+                        if (ex is SqliteException sqlEx)
+                        {
+                            // NB: This must be called after sqlite3_result_error()
+                            raw.sqlite3_result_error_code(ctx, sqlEx.SqliteErrorCode);
+                        }
+                    }
+                };
+            }
+
+            var rc = raw.sqlite3_create_function(_db, name, arity, state, func);
+            SqliteException.ThrowExceptionForRC(rc, _db);
+        }
+
+        private void CreateAggregateCore<TAccumulate, TResult>(
+            string name,
+            int arity,
+            TAccumulate seed,
+            Func<TAccumulate, SqliteValueReader, TAccumulate> func,
+            Func<TAccumulate, TResult> resultSelector)
+        {
+            if (string.IsNullOrEmpty(name))
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            if (State != ConnectionState.Open)
+            {
+                throw new InvalidOperationException(Resources.CallRequiresOpenConnection(nameof(CreateAggregate)));
+            }
+
+            delegate_function_aggregate_step func_step = null;
+            if (func != null)
+            {
+                func_step = (ctx, user_data, args) =>
+                {
+                    var context = (AggregateContext<TAccumulate>)user_data;
+                    if (context.Exception != null)
+                    {
+                        return;
+                    }
+
+                    // TODO: Avoid allocation when niladic
+                    var reader = new SqliteParameterReader(args);
+
+                    try
+                    {
+                        // TODO: Avoid closure by passing func via user_data
+                        // NB: No need to set ctx.state since we just mutate the instance
+                        context.Accumulate = func(context.Accumulate, reader);
+                    }
+                    catch (Exception ex)
+                    {
+                        context.Exception = ex;
+                    }
+                };
+            }
+
+            delegate_function_aggregate_final func_final = null;
+            if (resultSelector != null)
+            {
+                func_final = (ctx, user_data) =>
+                {
+                    var context = (AggregateContext<TAccumulate>)user_data;
+
+                    if (context.Exception == null)
+                    {
+                        try
+                        {
+                            // TODO: Avoid closure by passing resultSelector via user_data
+                            var result = resultSelector(context.Accumulate);
+
+                            new SqliteResultBinder(ctx, result).Bind();
+                        }
+                        catch (Exception ex)
+                        {
+                            context.Exception = ex;
+                        }
+                    }
+
+                    if (context.Exception != null)
+                    {
+                        raw.sqlite3_result_error(ctx, context.Exception.Message);
+
+                        if (context.Exception is SqliteException sqlEx)
+                        {
+                            // NB: This must be called after sqlite3_result_error()
+                            raw.sqlite3_result_error_code(ctx, sqlEx.SqliteErrorCode);
+                        }
+                    }
+                };
+            }
+
+            var rc = raw.sqlite3_create_function(
+                _db,
+                name,
+                arity,
+                new AggregateContext<TAccumulate>(seed),
+                func_step,
+                func_final);
+            SqliteException.ThrowExceptionForRC(rc, _db);
+        }
+
+        private static Func<TState, SqliteValueReader, TResult> IfNotNull<TState, TResult>(
+            object x,
+            Func<TState, SqliteValueReader, TResult> value)
+            => x != null ? value : null;
+
+        private static object[] GetValues(SqliteValueReader reader)
+        {
+            var values = new object[reader.FieldCount];
+            reader.GetValues(values);
+
+            return values;
+        }
+
+        private class AggregateContext<T>
+        {
+            public AggregateContext(T seed)
+                => Accumulate = seed;
+
+            public T Accumulate { get; set; }
+            public Exception Exception { get; set; }
+        }
     }
 }
