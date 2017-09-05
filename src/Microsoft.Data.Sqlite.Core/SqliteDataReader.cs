@@ -448,26 +448,20 @@ namespace Microsoft.Data.Sqlite
             var schemaTable = new DataTable("SchemaTable");
 
             var ColumnName = new DataColumn(SchemaTableColumn.ColumnName, typeof(string));
-            var Ordinal = new DataColumn(SchemaTableColumn.ColumnOrdinal, typeof(int));
-            var Size = new DataColumn(SchemaTableColumn.ColumnSize, typeof(int));
-            var Precision = new DataColumn(SchemaTableColumn.NumericPrecision, typeof(short));
-            var Scale = new DataColumn(SchemaTableColumn.NumericScale, typeof(short));
+            var ColumnOrdinal = new DataColumn(SchemaTableColumn.ColumnOrdinal, typeof(int));
+            var ColumnSize = new DataColumn(SchemaTableColumn.ColumnSize, typeof(int));
+            var NumericPrecision = new DataColumn(SchemaTableColumn.NumericPrecision, typeof(short));
+            var NumericScale = new DataColumn(SchemaTableColumn.NumericScale, typeof(short));
 
             var DataType = new DataColumn(SchemaTableColumn.DataType, typeof(Type));
             var DataTypeName = new DataColumn("DataTypeName", typeof(string));
-            var ProviderSpecificDataType = new DataColumn(SchemaTableOptionalColumn.ProviderSpecificDataType, typeof(Type));
-            var ProviderType = new DataColumn(SchemaTableColumn.ProviderType, typeof(int));
-            var NonVersionedProviderType = new DataColumn(SchemaTableColumn.NonVersionedProviderType, typeof(int));
 
             var IsLong = new DataColumn(SchemaTableColumn.IsLong, typeof(bool));
             var AllowDBNull = new DataColumn(SchemaTableColumn.AllowDBNull, typeof(bool));
-            var IsReadOnly = new DataColumn(SchemaTableOptionalColumn.IsReadOnly, typeof(bool));
-            var IsRowVersion = new DataColumn(SchemaTableOptionalColumn.IsRowVersion, typeof(bool));
 
             var IsUnique = new DataColumn(SchemaTableColumn.IsUnique, typeof(bool));
             var IsKey = new DataColumn(SchemaTableColumn.IsKey, typeof(bool));
             var IsAutoIncrement = new DataColumn(SchemaTableOptionalColumn.IsAutoIncrement, typeof(bool));
-            var IsHidden = new DataColumn(SchemaTableOptionalColumn.IsHidden, typeof(bool));
 
             var BaseCatalogName = new DataColumn(SchemaTableOptionalColumn.BaseCatalogName, typeof(string));
             var BaseSchemaName = new DataColumn(SchemaTableColumn.BaseSchemaName, typeof(string));
@@ -477,68 +471,50 @@ namespace Microsoft.Data.Sqlite
             var BaseServerName = new DataColumn(SchemaTableOptionalColumn.BaseServerName, typeof(string));
             var IsAliased = new DataColumn(SchemaTableColumn.IsAliased, typeof(bool));
             var IsExpression = new DataColumn(SchemaTableColumn.IsExpression, typeof(bool));
-            var IsIdentity = new DataColumn("IsIdentity", typeof(bool));
-            var UdtAssemblyQualifiedName = new DataColumn("UdtAssemblyQualifiedName", typeof(string));
 
             var columns = schemaTable.Columns;
 
             columns.Add(ColumnName);
-            columns.Add(Ordinal);
-            //columns.Add(Size);
-            //columns.Add(Precision);
-            //columns.Add(Scale);
+            columns.Add(ColumnOrdinal);
+            columns.Add(ColumnSize);
+            columns.Add(NumericPrecision);
+            columns.Add(NumericScale);
             columns.Add(IsUnique);
             columns.Add(IsKey);
             columns.Add(BaseServerName);
             columns.Add(BaseCatalogName);
             columns.Add(BaseColumnName);
-            //columns.Add(BaseSchemaName);
+            columns.Add(BaseSchemaName);
             columns.Add(BaseTableName);
             columns.Add(DataType);
             columns.Add(DataTypeName);
             columns.Add(AllowDBNull);
-            //columns.Add(ProviderType);
             columns.Add(IsAliased);
             columns.Add(IsExpression);
             columns.Add(IsAutoIncrement);
-            //columns.Add(IsRowVersion);
-            //columns.Add(IsHidden);
             columns.Add(IsLong);
-            //columns.Add(IsReadOnly);
-            //columns.Add(ProviderSpecificDataType);
-            //columns.Add(NonVersionedProviderType);
-            //columns.Add(IsIdentity);
-            //columns.Add(UdtAssemblyQualifiedName);
 
             for (var i = 0; i < FieldCount; i++)
             {
                 var schemaRow = schemaTable.NewRow();
                 schemaRow[ColumnName] = GetName(i);
-                schemaRow[Ordinal] = i;
-                //schemaRow[Size] = null;
-                //schemaRow[Precision] = null;
-                //schemaRow[Scale] = null;
+                schemaRow[ColumnOrdinal] = i;
+                schemaRow[ColumnSize] = DBNull.Value;
+                schemaRow[NumericPrecision] = DBNull.Value;
+                schemaRow[NumericScale] = DBNull.Value;
                 schemaRow[BaseServerName] = _command.Connection.DataSource;
                 var databaseName = raw.sqlite3_column_database_name(_stmt, i);
                 schemaRow[BaseCatalogName] = databaseName;
                 var columnName = raw.sqlite3_column_origin_name(_stmt, i);
                 schemaRow[BaseColumnName] = columnName;
-                //schemaRow[BaseSchemaName] = null;
+                schemaRow[BaseSchemaName] = DBNull.Value;
                 var tableName = raw.sqlite3_column_table_name(_stmt, i);
                 schemaRow[BaseTableName] = tableName;
                 schemaRow[DataType] = GetFieldType(i);
                 schemaRow[DataTypeName] = GetDataTypeName(i);
-                //schemaRow[ProviderType] = null;
-                schemaRow[IsAliased] = raw.sqlite3_column_origin_name(_stmt, i) != GetName(i);
-                schemaRow[IsExpression] = raw.sqlite3_column_origin_name(_stmt, i) == null;
-                //schemaRow[IsRowVersion] = null;
-                //schemaRow[IsHidden] = null;
+                schemaRow[IsAliased] = columnName != GetName(i);
+                schemaRow[IsExpression] = columnName == null;
                 schemaRow[IsLong] = DBNull.Value;
-                //schemaRow[IsReadOnly] = null;
-                //schemaRow[ProviderSpecificDataType] = null;
-                //schemaRow[NonVersionedProviderType] = null;
-                //schemaRow[IsIdentity] = null;
-                //schemaRow[UdtAssemblyQualifiedName] = null;
 
                 if (!string.IsNullOrEmpty(tableName) && !string.IsNullOrEmpty(columnName))
                 {

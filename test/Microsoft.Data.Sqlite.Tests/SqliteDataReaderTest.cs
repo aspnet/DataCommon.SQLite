@@ -938,11 +938,15 @@ namespace Microsoft.Data.Sqlite
                     var schema = reader.GetSchemaTable();
                     Assert.True(schema.Columns.Contains("ColumnName"));
                     Assert.True(schema.Columns.Contains("ColumnOrdinal"));
+                    Assert.True(schema.Columns.Contains("ColumnSize"));
+                    Assert.True(schema.Columns.Contains("NumericPrecision"));
+                    Assert.True(schema.Columns.Contains("NumericScale"));
                     Assert.True(schema.Columns.Contains("IsUnique"));
                     Assert.True(schema.Columns.Contains("IsKey"));
                     Assert.True(schema.Columns.Contains("BaseServerName"));
                     Assert.True(schema.Columns.Contains("BaseCatalogName"));
                     Assert.True(schema.Columns.Contains("BaseColumnName"));
+                    Assert.True(schema.Columns.Contains("BaseSchemaName"));
                     Assert.True(schema.Columns.Contains("BaseTableName"));
                     Assert.True(schema.Columns.Contains("DataType"));
                     Assert.True(schema.Columns.Contains("DataTypeName"));
@@ -956,11 +960,15 @@ namespace Microsoft.Data.Sqlite
 
                     Assert.Equal("LastName", schema.Rows[0]["ColumnName"]);
                     Assert.Equal(0, schema.Rows[0]["ColumnOrdinal"]);
+                    Assert.Equal(DBNull.Value, schema.Rows[0]["ColumnSize"]);
+                    Assert.Equal(DBNull.Value, schema.Rows[0]["NumericPrecision"]);
+                    Assert.Equal(DBNull.Value, schema.Rows[0]["NumericScale"]);
                     Assert.False((bool)schema.Rows[0]["IsUnique"]);
                     Assert.False((bool)schema.Rows[0]["IsKey"]);
                     Assert.Equal("", schema.Rows[0]["BaseServerName"]);
                     Assert.Equal("main", schema.Rows[0]["BaseCatalogName"]);
                     Assert.Equal("LastName", schema.Rows[0]["BaseColumnName"]);
+                    Assert.Equal(DBNull.Value, schema.Rows[0]["BaseSchemaName"]);
                     Assert.Equal("Person", schema.Rows[0]["BaseTableName"]);
                     Assert.Equal(typeof(String), schema.Rows[0]["DataType"]);
                     Assert.Equal("TEXT", schema.Rows[0]["DataTypeName"]);
@@ -972,11 +980,15 @@ namespace Microsoft.Data.Sqlite
 
                     Assert.Equal("ID", schema.Rows[1]["ColumnName"]);
                     Assert.Equal(1, schema.Rows[1]["ColumnOrdinal"]);
+                    Assert.Equal(DBNull.Value, schema.Rows[1]["ColumnSize"]);
+                    Assert.Equal(DBNull.Value, schema.Rows[1]["NumericPrecision"]);
+                    Assert.Equal(DBNull.Value, schema.Rows[1]["NumericScale"]);
                     Assert.False((bool)schema.Rows[1]["IsUnique"]);
                     Assert.True((bool)schema.Rows[1]["IsKey"]);
                     Assert.Equal("", schema.Rows[1]["BaseServerName"]);
                     Assert.Equal("main", schema.Rows[1]["BaseCatalogName"]);
                     Assert.Equal("ID", schema.Rows[1]["BaseColumnName"]);
+                    Assert.Equal(DBNull.Value, schema.Rows[1]["BaseSchemaName"]);
                     Assert.Equal("Person", schema.Rows[1]["BaseTableName"]);
                     Assert.Equal(typeof(Int64), schema.Rows[1]["DataType"]);
                     Assert.Equal("INTEGER", schema.Rows[1]["DataTypeName"]);
@@ -988,11 +1000,15 @@ namespace Microsoft.Data.Sqlite
 
                     Assert.Equal("Code", schema.Rows[2]["ColumnName"]);
                     Assert.Equal(2, schema.Rows[2]["ColumnOrdinal"]);
+                    Assert.Equal(DBNull.Value, schema.Rows[2]["ColumnSize"]);
+                    Assert.Equal(DBNull.Value, schema.Rows[2]["NumericPrecision"]);
+                    Assert.Equal(DBNull.Value, schema.Rows[2]["NumericScale"]);
                     Assert.True((bool)schema.Rows[2]["IsUnique"]);
                     Assert.False((bool)schema.Rows[2]["IsKey"]);
                     Assert.Equal("", schema.Rows[2]["BaseServerName"]);
                     Assert.Equal("main", schema.Rows[2]["BaseCatalogName"]);
                     Assert.Equal("Code", schema.Rows[2]["BaseColumnName"]);
+                    Assert.Equal(DBNull.Value, schema.Rows[2]["BaseSchemaName"]);
                     Assert.Equal("Person", schema.Rows[2]["BaseTableName"]);
                     Assert.Equal(typeof(Int64), schema.Rows[2]["DataType"]);
                     Assert.Equal("INT", schema.Rows[2]["DataTypeName"]);
@@ -1004,11 +1020,15 @@ namespace Microsoft.Data.Sqlite
 
                     Assert.Equal("IncID", schema.Rows[3]["ColumnName"]);
                     Assert.Equal(3, schema.Rows[3]["ColumnOrdinal"]);
+                    Assert.Equal(DBNull.Value, schema.Rows[3]["ColumnSize"]);
+                    Assert.Equal(DBNull.Value, schema.Rows[3]["NumericPrecision"]);
+                    Assert.Equal(DBNull.Value, schema.Rows[3]["NumericScale"]);
                     Assert.Equal(DBNull.Value, schema.Rows[3]["IsUnique"]);
                     Assert.Equal(DBNull.Value, schema.Rows[3]["IsKey"]);
                     Assert.Equal("", schema.Rows[3]["BaseServerName"]);
                     Assert.Equal(DBNull.Value, schema.Rows[3]["BaseCatalogName"]);
                     Assert.Equal(DBNull.Value, schema.Rows[3]["BaseColumnName"]);
+                    Assert.Equal(DBNull.Value, schema.Rows[3]["BaseSchemaName"]);
                     Assert.Equal(DBNull.Value, schema.Rows[3]["BaseTableName"]);
                     Assert.Equal(typeof(Int64), schema.Rows[3]["DataType"]);
                     Assert.Equal("INTEGER", schema.Rows[3]["DataTypeName"]);
