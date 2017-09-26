@@ -51,20 +51,5 @@ namespace Microsoft.Data.Sqlite
 
             raw.sqlite3_bind_text(_stmt, _index, text);
         }
-
-        internal static int GetSize(object value)
-        {
-            var type = value.GetType().UnwrapNullableType().UnwrapEnumType();
-            if (type == typeof(string))
-            {
-                return ((string)value).Length;
-            }
-            else if (type == typeof(byte[]))
-            {
-                return ((byte[])value).Length;
-            }
-
-            return 0;
-        }
     }
 }
