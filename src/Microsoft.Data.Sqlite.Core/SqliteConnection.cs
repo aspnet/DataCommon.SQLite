@@ -556,5 +556,138 @@ namespace Microsoft.Data.Sqlite
             public T Accumulate { get; set; }
             public Exception Exception { get; set; }
         }
+
+        /// <summary>
+        /// System.Data.Common, initial implementation of API DBConnection.GetSchema(String)
+        /// Returns schema information for the data source of this DbConnection using the specified string for the schema name.
+        /// </summary>
+        /// <param name="collectionName">Specifies the name of the schema to return.</param>
+        /// <returns>A DataTable that contains schema information.</returns>
+        public override System.Data.DataTable GetSchema(string collectionName)
+        {
+            var dt = new DataTable(collectionName);
+            switch (collectionName)
+            {
+                case "DataTypes":
+                    dt.Columns.AddRange(new[] {
+                        new DataColumn("DataType", typeof(string)),
+                        new DataColumn("TypeName", typeof(string)),
+                        new DataColumn("ProviderDbType", typeof(int))
+                    });
+                    dt.Rows.Add(new object[] { "System.Int16", "smallint", 10 });
+                    dt.Rows.Add(new object[] { "System.Int32","int",11 });
+                    dt.Rows.Add(new object[] { "System.Double","real",8 });
+                    dt.Rows.Add(new object[] { "System.Single","single",15 });
+                    dt.Rows.Add(new object[] { "System.Double","float",8 });
+                    dt.Rows.Add(new object[] { "System.Double","double",8 });
+                    dt.Rows.Add(new object[] { "System.Decimal","money",7 });
+                    dt.Rows.Add(new object[] { "System.Decimal","currency",7 });
+                    dt.Rows.Add(new object[] { "System.Decimal","decimal",7 });
+                    dt.Rows.Add(new object[] { "System.Decimal","numeric",7 });
+                    dt.Rows.Add(new object[] { "System.Boolean","bit",3 });
+                    dt.Rows.Add(new object[] { "System.Boolean","yesno",3 });
+                    dt.Rows.Add(new object[] { "System.Boolean","logical",3 });
+                    dt.Rows.Add(new object[] { "System.Boolean","bool",3 });
+                    dt.Rows.Add(new object[] { "System.Boolean","boolean",3 });
+                    dt.Rows.Add(new object[] { "System.Byte","tinyint",2 });
+                    dt.Rows.Add(new object[] { "System.Int64","integer",12 });
+                    dt.Rows.Add(new object[] { "System.Int64","counter",12 });
+                    dt.Rows.Add(new object[] { "System.Int64","autoincrement",12 });
+                    dt.Rows.Add(new object[] { "System.Int64","identity",12 });
+                    dt.Rows.Add(new object[] { "System.Int64","long",12 });
+                    dt.Rows.Add(new object[] { "System.Int64","bigint",12 });
+                    dt.Rows.Add(new object[] { "System.Byte[]","binary",1 });
+                    dt.Rows.Add(new object[] { "System.Byte[]","varbinary",1 });
+                    dt.Rows.Add(new object[] { "System.Byte[]","blob",1 });
+                    dt.Rows.Add(new object[] { "System.Byte[]","image",1 });
+                    dt.Rows.Add(new object[] { "System.Byte[]","general",1 });
+                    dt.Rows.Add(new object[] { "System.Byte[]","oleobject",1 });
+                    dt.Rows.Add(new object[] { "System.String","varchar",16 });
+                    dt.Rows.Add(new object[] { "System.String","nvarchar",16 });
+                    dt.Rows.Add(new object[] { "System.String","memo",16 });
+                    dt.Rows.Add(new object[] { "System.String","longtext",16 });
+                    dt.Rows.Add(new object[] { "System.String","note",16 });
+                    dt.Rows.Add(new object[] { "System.String","text",16 });
+                    dt.Rows.Add(new object[] { "System.String","ntext",16 });
+                    dt.Rows.Add(new object[] { "System.String","string",16 });
+                    dt.Rows.Add(new object[] { "System.String","char",16 });
+                    dt.Rows.Add(new object[] { "System.String","nchar",16 });
+                    dt.Rows.Add(new object[] { "System.DateTime","datetime",6 });
+                    dt.Rows.Add(new object[] { "System.DateTime","smalldate",6 });
+                    dt.Rows.Add(new object[] { "System.DateTime","timestamp",6 });
+                    dt.Rows.Add(new object[] { "System.DateTime","date",6 });
+                    dt.Rows.Add(new object[] { "System.DateTime","time",6 });
+                    dt.Rows.Add(new object[] { "System.Guid","uniqueidentifier",4 });
+                    dt.Rows.Add(new object[] { "System.Guid","guid",4 });
+                    return dt;
+                case "Tables":
+                    dt.Columns.AddRange(new[] {
+                        new DataColumn("TABLE_TYPE"),
+                        new DataColumn("TABLE_CATALOG"),
+                        new DataColumn("TABLE_NAME")
+                    });
+                    var typesQuery = "SELECT type as TABLE_TYPE, 'main' as TABLE_CATALOG, name as TABLE_NAME FROM sqlite_master WHERE type='table';";
+                    if(this.State != ConnectionState.Open)
+                    {
+                        this.Open();
+                    }
+                    using (var com = new SqliteCommand(typesQuery, this))
+                    using(var reader = com.ExecuteReader())
+                    {
+                        while (reader.Read()) {
+                            dt.Rows.Add(new object[] { reader.GetString(0), reader.GetString(1), reader.GetString(2) });
+                        }
+                    }
+                    return dt;
+                case "ForeignKeys":
+                    var tableQuery = "SELECT name as TABLE_NAME FROM sqlite_master WHERE type='table';";
+                    var tables = new List<string>();
+
+                    if (this.State != ConnectionState.Open)
+                    {
+                        this.Open();
+                    }
+
+                    using (var com = new SqliteCommand(tableQuery, this))
+                    using (var reader = com.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            tables.Add(reader.GetString(0));
+                        }
+                    }
+                    dt.Columns.AddRange(new[] {
+                        new DataColumn("TABLE_NAME"),
+                        new DataColumn("FKEY_TO_CATALOG"),
+                        new DataColumn("TABLE_CATALOG"),
+                        new DataColumn("FKEY_TO_TABLE"),
+                        new DataColumn("FKEY_FROM_COLUMN"),
+                        new DataColumn("FKEY_TO_COLUMN"),
+                        new DataColumn("CONSTRAINT_NAME")
+                    });
+                    foreach(var tablename in tables){
+                        var relationQuery = "pragma foreign_key_list(" + tablename + ")";
+                        using (var com = new SqliteCommand(relationQuery, this))
+                        using (var reader = com.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                dt.Rows.Add(new object[] {
+                                    tablename,
+                                    "main",
+                                    "main",
+                                    reader.GetString(2),
+                                    reader.GetString(3),
+                                    reader.GetString(4),
+                                    "fk_" + tablename + reader.GetString(0)
+                                });
+                            }
+                        }
+                    }
+                    return dt;
+                default:
+                    throw new NotImplementedException("Not yet supported: GetSchema(\"" + collectionName + "\"). We do accept PRs.");
+            }
+        }
     }
 }

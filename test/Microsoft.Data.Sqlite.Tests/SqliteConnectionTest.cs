@@ -890,5 +890,29 @@ namespace Microsoft.Data.Sqlite
                 Assert.Equal(101, list[0].RowId);
             }
         }
+
+        [Fact]
+        public void GetSchema_has_collections()
+        {
+            var connectionString = "Data Source=readonly.db";
+
+            var connection = new SqliteConnection(connectionString);
+            var dataTypes = connection.GetSchema("DataTypes");
+            var intRow = dataTypes.Rows[0];
+
+            Assert.Equal("System.Int16", intRow["DataType"]);
+            Assert.Equal("smallint", intRow["TypeName"]);
+            Assert.Equal(10, intRow["ProviderDbType"]);
+
+            var tables = connection.GetSchema("Tables");
+            var tbl = tables.Rows[0];
+            Assert.Equal("Idomic", tbl["TABLE_NAME"]);
+
+            var fkKeys = connection.GetSchema("ForeignKeys");
+            Assert.Equal("TABLE_NAME", fkKeys.Columns[0].ColumnName);
+            Assert.True(fkKeys.Rows!=null);
+
+        }
+
     }
 }
