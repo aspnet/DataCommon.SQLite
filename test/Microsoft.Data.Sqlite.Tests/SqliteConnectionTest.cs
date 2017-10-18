@@ -898,17 +898,14 @@ namespace Microsoft.Data.Sqlite
 
             var connection = new SqliteConnection(connectionString);
             var dataTypes = connection.GetSchema("DataTypes");
-            var intRow = dataTypes.Rows[0];
+			Assert.Equal("DataType", dataTypes.Columns[0].ColumnName);
+			Assert.True(dataTypes.Rows != null);
 
-            Assert.Equal("System.Int16", intRow["DataType"]);
-            Assert.Equal("smallint", intRow["TypeName"]);
-            Assert.Equal(10, intRow["ProviderDbType"]);
+			var tables = connection.GetSchema("Tables");
+			Assert.Equal("TABLE_TYPE", tables.Columns[0].ColumnName);
+			Assert.True(tables.Rows != null);
 
-            var tables = connection.GetSchema("Tables");
-            var tbl = tables.Rows[0];
-            Assert.Equal("Idomic", tbl["TABLE_NAME"]);
-
-            var fkKeys = connection.GetSchema("ForeignKeys");
+			var fkKeys = connection.GetSchema("ForeignKeys");
             Assert.Equal("TABLE_NAME", fkKeys.Columns[0].ColumnName);
             Assert.True(fkKeys.Rows!=null);
 
