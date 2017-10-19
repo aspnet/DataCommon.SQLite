@@ -894,7 +894,7 @@ namespace Microsoft.Data.Sqlite
         [Fact]
         public void GetSchema_has_collections()
         {
-            var connectionString = "Data Source=readonly.db";
+            var connectionString = "Data Source=:memory:";
 
             var connection = new SqliteConnection(connectionString);
             var dataTypes = connection.GetSchema("DataTypes");
