@@ -570,9 +570,9 @@ namespace Microsoft.Data.Sqlite
             {
                 case "DataTypes":
                     dt.Columns.AddRange(new[] {
-                        new DataColumn("DataType", typeof(string)),
-                        new DataColumn("TypeName", typeof(string)),
-                        new DataColumn("ProviderDbType", typeof(int))
+                        new DataColumn(DbMetaDataColumnNames.DataType, typeof(string)),
+                        new DataColumn(DbMetaDataColumnNames.TypeName, typeof(string)),
+                        new DataColumn(DbMetaDataColumnNames.ProviderDbType, typeof(int))
                     });
                     dt.Rows.Add(new object[] { "System.Int16", "smallint", 10 });
                     dt.Rows.Add(new object[] { "System.Int32","int",11 });
