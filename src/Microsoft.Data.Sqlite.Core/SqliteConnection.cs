@@ -565,6 +565,18 @@ namespace Microsoft.Data.Sqlite
         /// <returns>A DataTable that contains schema information.</returns>
         public override System.Data.DataTable GetSchema(string collectionName)
         {
+            return GetSchema(collectionName, null);
+        }
+
+        /// <summary>
+        /// System.Data.Common, initial implementation of API DBConnection.GetSchema(String)
+        /// Returns schema information for the data source of this DbConnection using the specified string for the schema name.
+        /// </summary>
+        /// <param name="collectionName">Specifies the name of the schema to return.</param>
+        /// <param name="restrictions">Restrictions not supported yet.</param>
+        /// <returns>A DataTable that contains schema information.</returns>
+        public override System.Data.DataTable GetSchema(string collectionName, string[] restrictions)
+        {
             var dt = new DataTable(collectionName);
             switch (collectionName)
             {
