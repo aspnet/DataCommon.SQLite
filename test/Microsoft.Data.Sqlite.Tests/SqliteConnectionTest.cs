@@ -897,9 +897,19 @@ namespace Microsoft.Data.Sqlite
             var connectionString = "Data Source=:memory:";
 
             var connection = new SqliteConnection(connectionString);
-            var dataTypes = connection.GetSchema("DataTypes");
+
+			var collections = connection.GetSchema("MetaDataCollections", new string[] { });
+			Assert.Equal("CollectionName", collections.Columns[0].ColumnName);
+			Assert.True(collections.Rows != null);
+			var crow1 = String.Join(",", collections.Rows[0].ItemArray);
+			Assert.Equal("MetaDataCollections,0,0", crow1);
+
+			var dataTypes = connection.GetSchema("DataTypes");
 			Assert.Equal("DataType", dataTypes.Columns[0].ColumnName);
 			Assert.True(dataTypes.Rows != null);
+			Assert.True(dataTypes.Rows.Count > 15);
+			var drow1 = String.Join(",", dataTypes.Rows[0].ItemArray);
+			Assert.Equal("System.Int16,smallint,10", drow1);
 
 			var tables = connection.GetSchema("Tables");
 			Assert.Equal("TABLE_TYPE", tables.Columns[0].ColumnName);

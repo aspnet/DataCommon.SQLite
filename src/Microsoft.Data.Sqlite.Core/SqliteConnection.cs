@@ -580,6 +580,18 @@ namespace Microsoft.Data.Sqlite
             var dt = new DataTable(collectionName);
             switch (collectionName)
             {
+                case "MetaDataCollections":
+                    dt.Columns.AddRange(new[] { 
+                        new DataColumn("CollectionName", typeof(string)), 
+                        new DataColumn("NumberOfRestrictions", typeof(int)), 
+                        new DataColumn("NumberOfIdentifierParts", typeof(int)) 
+                    });
+                    dt.Rows.Add("MetaDataCollections", 0, 0); 
+                    dt.Rows.Add("DataTypes", 0, 0); 
+                    dt.Rows.Add("Tables", 0, 0); 
+                    dt.Rows.Add("ForeignKeys", 0, 0); 
+                    return dt;
+
                 case "DataTypes":
                     dt.Columns.AddRange(new[] {
                         new DataColumn(DbMetaDataColumnNames.DataType, typeof(string)),
