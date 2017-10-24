@@ -561,12 +561,18 @@ namespace Microsoft.Data.Sqlite
         /// System.Data.Common, initial implementation of API DBConnection.GetSchema(String)
         /// Returns schema information for the data source of this DbConnection using the specified string for the schema name.
         /// </summary>
+        /// <returns>A DataTable that contains supported MetaDataCollections.</returns>
+        public override DataTable GetSchema()
+            => GetSchema(DbMetaDataCollectionNames.MetaDataCollections, null);
+
+        /// <summary>
+        /// System.Data.Common, initial implementation of API DBConnection.GetSchema(String)
+        /// Returns schema information for the data source of this DbConnection using the specified string for the schema name.
+        /// </summary>
         /// <param name="collectionName">Specifies the name of the schema to return.</param>
         /// <returns>A DataTable that contains schema information.</returns>
         public override System.Data.DataTable GetSchema(string collectionName)
-        {
-            return GetSchema(collectionName, null);
-        }
+            => GetSchema(collectionName, null);
 
         /// <summary>
         /// System.Data.Common, initial implementation of API DBConnection.GetSchema(String)
