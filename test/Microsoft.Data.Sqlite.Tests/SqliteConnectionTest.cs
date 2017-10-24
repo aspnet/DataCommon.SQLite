@@ -890,5 +890,36 @@ namespace Microsoft.Data.Sqlite
                 Assert.Equal(101, list[0].RowId);
             }
         }
+
+        [Fact]
+        public void GetSchema_has_collections()
+        {
+            var connectionString = "Data Source=:memory:";
+
+            var connection = new SqliteConnection(connectionString);
+
+			var collections = connection.GetSchema("MetaDataCollections", new string[] { });
+			Assert.Equal("CollectionName", collections.Columns[0].ColumnName);
+			Assert.True(collections.Rows != null);
+			var crow1 = String.Join(",", collections.Rows[0].ItemArray);
+			Assert.Equal("MetaDataCollections,0,0", crow1);
+
+			var dataTypes = connection.GetSchema("DataTypes");
+			Assert.Equal("DataType", dataTypes.Columns[0].ColumnName);
+			Assert.True(dataTypes.Rows != null);
+			Assert.True(dataTypes.Rows.Count > 15);
+			var drow1 = String.Join(",", dataTypes.Rows[0].ItemArray);
+			Assert.Equal("System.Int16,smallint,10", drow1);
+
+			var tables = connection.GetSchema("Tables");
+			Assert.Equal("TABLE_TYPE", tables.Columns[0].ColumnName);
+			Assert.True(tables.Rows != null);
+
+			var fkKeys = connection.GetSchema("ForeignKeys");
+            Assert.Equal("TABLE_NAME", fkKeys.Columns[0].ColumnName);
+            Assert.True(fkKeys.Rows!=null);
+
+        }
+
     }
 }
