@@ -132,13 +132,7 @@ namespace Microsoft.Data.Sqlite
         ///     An array of parameters to add. They must be <see cref="SqliteParameter" /> objects.
         /// </param>
         public override void AddRange(Array values)
-        {
-            int valueCount = values.Length;
-            for (int i = 0; i < valueCount; i++)
-            {
-                Add((SqliteParameter)values.GetValue(i));
-            }
-        }
+            => AddRange(values.Cast<SqliteParameter>());
 
         /// <summary>
         ///     Adds multiple parameters to the collection.
