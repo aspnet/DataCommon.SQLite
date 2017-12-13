@@ -392,9 +392,9 @@ namespace Microsoft.Data.Sqlite
             }
         }
         
-		[Fact]
-		public void Add_range_of_parameters_using_DbCommand_base_class()
-		{
+        [Fact]
+        public void Add_range_of_parameters_using_DbCommand_base_class()
+        {
             using (var connection = new SqliteConnection("Data Source=:memory:"))
             {
                 var command = connection.CreateCommand() as DbCommand;
@@ -413,12 +413,12 @@ namespace Microsoft.Data.Sqlite
 
                 using (var reader = command.ExecuteReader())
                 {
-					Assert.True(reader.Read());
-					Assert.Equal(parameterValue1.Value, reader.GetString(0));
-					Assert.Equal(parameterValue2.Value, reader.GetString(1));
+                    Assert.True(reader.Read());
+                    Assert.Equal(parameterValue1.Value, reader.GetString(0));
+                    Assert.Equal(parameterValue2.Value, reader.GetString(1));
                 }
-            }		
-		}        
+            }
+        }      
 
         private enum MyEnum
         {
