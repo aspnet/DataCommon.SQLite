@@ -25,8 +25,16 @@ namespace Microsoft.Data.Sqlite
             var blob = value;
             if (ShouldTruncate(value.Length))
             {
-                blob = new byte[_size.Value];
-                Array.Copy(value, blob, _size.Value);
+                if (value == null)
+                {
+                    raw.sqlite3_bind_zeroblob(_stmt, _index, _size.Value);
+                    return;
+                }
+                else if (value.Length > _size.Value)
+                {
+                    blob = new byte[_size.Value];
+                    Array.Copy(value, blob, _size.Value);
+                }
             }
 
             raw.sqlite3_bind_blob(_stmt, _index, blob);

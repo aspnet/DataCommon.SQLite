@@ -49,7 +49,14 @@ namespace Microsoft.Data.Sqlite
         {
             if (_value == null)
             {
-                BindNull();
+                if (_sqliteType != SqliteType.Blob)
+                {
+                    BindNull();
+                }
+                else
+                {
+                    BindBlob(null);
+                }
 
                 return;
             }

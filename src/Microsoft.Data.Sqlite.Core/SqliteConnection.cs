@@ -228,6 +228,33 @@ namespace Microsoft.Data.Sqlite
         }
 
         /// <summary>
+        /// Open a BLOB for incremental I/O.
+        /// </summary>
+        /// <param name="tableName">The table name.</param>
+        /// <param name="columnName">The column name.</param>
+        /// <param name="rowid">The row index.</param>
+        /// <param name="readWriteAccess">Flag indicating whether read and write access is desired (otherwise only read access).</param>
+        /// <returns>Object to access the BLOB.</returns>
+        public SqliteBlob OpenBlob(string tableName, string columnName, long rowid, bool readWriteAccess)
+            => OpenBlob(MainDatabaseName, tableName, columnName, rowid, readWriteAccess);
+
+        /// <summary>
+        /// Open a BLOB for incremental I/O.
+        /// </summary>
+        /// <param name="databaseName">The name of the database.</param>
+        /// <param name="tableName">The table name.</param>
+        /// <param name="columnName">The column name.</param>
+        /// <param name="rowid">The row index.</param>
+        /// <param name="readWriteAccess">Flag indicating whether read and write access is desired (otherwise only read access).</param>
+        /// <returns>Object to access the BLOB.</returns>
+        public SqliteBlob OpenBlob(string databaseName, string tableName, string columnName, long rowid, bool readWriteAccess)
+        {
+            var rc = raw.sqlite3_blob_open(_db, databaseName, tableName, columnName, rowid, readWriteAccess ? 1 : 0, out var blob);
+            SqliteException.ThrowExceptionForRC(rc, _db);
+            return new SqliteBlob(blob, _db);
+        }
+
+        /// <summary>
         ///     Closes the connection to the database. Open transactions are rolled back.
         /// </summary>
         public override void Close()

@@ -235,6 +235,52 @@ namespace Microsoft.Data.Sqlite
         }
 
         [Fact]
+        public void OpenBlob_works()
+        {
+            using (var connection = new SqliteConnection("Data Source=:memory:"))
+            {
+                connection.Open();
+
+                connection.ExecuteNonQuery(
+                    "CREATE TABLE DataTable (Id INTEGER PRIMARY KEY, Data BLOB);" +
+                    "INSERT INTO DataTable VALUES (5, X'01020304');");
+
+                var command = connection.CreateCommand();
+                command.CommandText = "INSERT INTO DataTable VALUES (@Id, @BlobValue);";
+                command.Parameters.AddWithValue("@Id", 7);
+                command.Parameters.Add("@BlobValue", SqliteType.Blob, 5);
+                command.ExecuteNonQuery();
+
+                using (var blob = connection.OpenBlob("main", "DataTable", "Data", 5, true))
+                {
+                    Assert.Equal(4, blob.Length);
+                    var buffer = new byte[2];
+                    blob.ReadBytes(buffer, 2, 1);
+                    Assert.Equal(new byte[2] { 0x02, 0x03 }, buffer);
+                    buffer = new byte[2] { 0x42, 0x43 };
+                    blob.WriteBytes(buffer, 2, 1);
+                    buffer = new byte[4];
+                    blob.ReadBytes(buffer, 4, 0);
+                    Assert.Equal(new byte[4] { 0x01, 0x42, 0x43, 0x04 }, buffer);
+                }
+
+                // TODO: when sqlite3_blob_reopen is added to SQLitePCL.raw add possibility to change the rowid
+                using (var blob = connection.OpenBlob("main", "DataTable", "Data", 7, true))
+                {
+                    Assert.Equal(5, blob.Length);
+                    var buffer = new byte[5];
+                    blob.ReadBytes(buffer, 5, 0);
+                    Assert.Equal(new byte[5] { 0, 0, 0, 0, 0 }, buffer);
+                    var writeBuffer = new byte[5] { 0x10, 0x20, 0x30, 0x40, 0x50 };
+                    blob.WriteBytes(writeBuffer, 5, 0);
+                    buffer = new byte[5];
+                    blob.ReadBytes(buffer, 5, 0);
+                    Assert.Equal(writeBuffer, buffer);
+                }
+            }
+        }
+
+        [Fact]
         public void BackupDatabase_works()
         {
             using (var connection1 = new SqliteConnection("Data Source=:memory:"))
