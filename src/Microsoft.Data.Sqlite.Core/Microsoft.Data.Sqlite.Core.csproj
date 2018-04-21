@@ -26,6 +26,14 @@ Microsoft.Data.Sqlite.SqliteTransaction</Description>
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </None>
+    <None Update="SqliteConfiguration.AddAggregate.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>SqliteConfiguration.AddAggregate.cs</LastGenOutput>
+    </None>
+    <None Update="SqliteConfiguration.AddFunction.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>SqliteConfiguration.AddFunction.cs</LastGenOutput>
+    </None>
     <None Update="SqliteConnection.CreateAggregate.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>SqliteConnection.CreateAggregate.cs</LastGenOutput>
@@ -49,6 +57,16 @@ Microsoft.Data.Sqlite.SqliteTransaction</Description>
     </Compile>
     <Compile Update="SqliteCommand.cs">
       <SubType>Component</SubType>
+    </Compile>
+    <Compile Update="SqliteConfiguration.AddAggregate.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>SqliteConfiguration.AddAggregate.tt</DependentUpon>
+    </Compile>
+    <Compile Update="SqliteConfiguration.AddFunction.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>SqliteConfiguration.AddFunction.tt</DependentUpon>
     </Compile>
     <Compile Update="SqliteConnection.CreateAggregate.cs">
       <DesignTime>True</DesignTime>

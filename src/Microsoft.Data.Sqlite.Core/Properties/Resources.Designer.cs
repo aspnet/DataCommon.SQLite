@@ -236,6 +236,14 @@ namespace Microsoft.Data.Sqlite.Properties
                 GetString("UDFCalledWithNull", nameof(function), nameof(ordinal)),
                 function, ordinal);
 
+        /// <summary>
+        /// {propertyName} can only be changed when the connection is closed.
+        /// </summary>
+        public static string SetterRequiresClosedConnection(object propertyName)
+            => string.Format(
+                GetString("SetterRequiresClosedConnection", nameof(propertyName)),
+                propertyName);
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

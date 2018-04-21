@@ -15,7 +15,7 @@ namespace Microsoft.Data.Sqlite
         /// <param name="function">The function to be invoked.</param>
         /// <param name="isDeterministic">Flag indicating whether the function is deterministic.</param>
         public virtual void CreateFunction<TResult>(string name, Func<TResult> function, bool isDeterministic = false)
-            => CreateFunctionCore(name, 0, null, IfNotNull<object, TResult>(function, (s, r) => function()), isDeterministic);
+            => CreateFunctionCore(name, 0, null, SqliteConfiguration.IfNotNull<object, TResult>(function, (s, r) => function()), isDeterministic);
 
         /// <summary>
         ///     Creates or redefines a SQL function.
@@ -26,7 +26,7 @@ namespace Microsoft.Data.Sqlite
         /// <param name="function">The function to be invoked.</param>
         /// <param name="isDeterministic">Flag indicating whether the function is deterministic.</param>
         public virtual void CreateFunction<T1, TResult>(string name, Func<T1, TResult> function, bool isDeterministic = false)
-            => CreateFunctionCore(name, 1, null, IfNotNull<object, TResult>(function, (s, r) => function(r.GetFieldValue<T1>(0))), isDeterministic);
+            => CreateFunctionCore(name, 1, null, SqliteConfiguration.IfNotNull<object, TResult>(function, (s, r) => function(r.GetFieldValue<T1>(0))), isDeterministic);
 
         /// <summary>
         ///     Creates or redefines a SQL function.
@@ -38,7 +38,7 @@ namespace Microsoft.Data.Sqlite
         /// <param name="function">The function to be invoked.</param>
         /// <param name="isDeterministic">Flag indicating whether the function is deterministic.</param>
         public virtual void CreateFunction<T1, T2, TResult>(string name, Func<T1, T2, TResult> function, bool isDeterministic = false)
-            => CreateFunctionCore(name, 2, null, IfNotNull<object, TResult>(function, (s, r) => function(r.GetFieldValue<T1>(0), r.GetFieldValue<T2>(1))), isDeterministic);
+            => CreateFunctionCore(name, 2, null, SqliteConfiguration.IfNotNull<object, TResult>(function, (s, r) => function(r.GetFieldValue<T1>(0), r.GetFieldValue<T2>(1))), isDeterministic);
 
         /// <summary>
         ///     Creates or redefines a SQL function.
@@ -51,7 +51,7 @@ namespace Microsoft.Data.Sqlite
         /// <param name="function">The function to be invoked.</param>
         /// <param name="isDeterministic">Flag indicating whether the function is deterministic.</param>
         public virtual void CreateFunction<T1, T2, T3, TResult>(string name, Func<T1, T2, T3, TResult> function, bool isDeterministic = false)
-            => CreateFunctionCore(name, 3, null, IfNotNull<object, TResult>(function, (s, r) => function(r.GetFieldValue<T1>(0), r.GetFieldValue<T2>(1), r.GetFieldValue<T3>(2))), isDeterministic);
+            => CreateFunctionCore(name, 3, null, SqliteConfiguration.IfNotNull<object, TResult>(function, (s, r) => function(r.GetFieldValue<T1>(0), r.GetFieldValue<T2>(1), r.GetFieldValue<T3>(2))), isDeterministic);
 
         /// <summary>
         ///     Creates or redefines a SQL function.
@@ -65,7 +65,7 @@ namespace Microsoft.Data.Sqlite
         /// <param name="function">The function to be invoked.</param>
         /// <param name="isDeterministic">Flag indicating whether the function is deterministic.</param>
         public virtual void CreateFunction<T1, T2, T3, T4, TResult>(string name, Func<T1, T2, T3, T4, TResult> function, bool isDeterministic = false)
-            => CreateFunctionCore(name, 4, null, IfNotNull<object, TResult>(function, (s, r) => function(r.GetFieldValue<T1>(0), r.GetFieldValue<T2>(1), r.GetFieldValue<T3>(2), r.GetFieldValue<T4>(3))), isDeterministic);
+            => CreateFunctionCore(name, 4, null, SqliteConfiguration.IfNotNull<object, TResult>(function, (s, r) => function(r.GetFieldValue<T1>(0), r.GetFieldValue<T2>(1), r.GetFieldValue<T3>(2), r.GetFieldValue<T4>(3))), isDeterministic);
 
         /// <summary>
         ///     Creates or redefines a SQL function.
@@ -80,7 +80,7 @@ namespace Microsoft.Data.Sqlite
         /// <param name="function">The function to be invoked.</param>
         /// <param name="isDeterministic">Flag indicating whether the function is deterministic.</param>
         public virtual void CreateFunction<T1, T2, T3, T4, T5, TResult>(string name, Func<T1, T2, T3, T4, T5, TResult> function, bool isDeterministic = false)
-            => CreateFunctionCore(name, 5, null, IfNotNull<object, TResult>(function, (s, r) => function(r.GetFieldValue<T1>(0), r.GetFieldValue<T2>(1), r.GetFieldValue<T3>(2), r.GetFieldValue<T4>(3), r.GetFieldValue<T5>(4))), isDeterministic);
+            => CreateFunctionCore(name, 5, null, SqliteConfiguration.IfNotNull<object, TResult>(function, (s, r) => function(r.GetFieldValue<T1>(0), r.GetFieldValue<T2>(1), r.GetFieldValue<T3>(2), r.GetFieldValue<T4>(3), r.GetFieldValue<T5>(4))), isDeterministic);
 
         /// <summary>
         ///     Creates or redefines a SQL function.
@@ -96,7 +96,7 @@ namespace Microsoft.Data.Sqlite
         /// <param name="function">The function to be invoked.</param>
         /// <param name="isDeterministic">Flag indicating whether the function is deterministic.</param>
         public virtual void CreateFunction<T1, T2, T3, T4, T5, T6, TResult>(string name, Func<T1, T2, T3, T4, T5, T6, TResult> function, bool isDeterministic = false)
-            => CreateFunctionCore(name, 6, null, IfNotNull<object, TResult>(function, (s, r) => function(r.GetFieldValue<T1>(0), r.GetFieldValue<T2>(1), r.GetFieldValue<T3>(2), r.GetFieldValue<T4>(3), r.GetFieldValue<T5>(4), r.GetFieldValue<T6>(5))), isDeterministic);
+            => CreateFunctionCore(name, 6, null, SqliteConfiguration.IfNotNull<object, TResult>(function, (s, r) => function(r.GetFieldValue<T1>(0), r.GetFieldValue<T2>(1), r.GetFieldValue<T3>(2), r.GetFieldValue<T4>(3), r.GetFieldValue<T5>(4), r.GetFieldValue<T6>(5))), isDeterministic);
 
         /// <summary>
         ///     Creates or redefines a SQL function.
@@ -113,7 +113,7 @@ namespace Microsoft.Data.Sqlite
         /// <param name="function">The function to be invoked.</param>
         /// <param name="isDeterministic">Flag indicating whether the function is deterministic.</param>
         public virtual void CreateFunction<T1, T2, T3, T4, T5, T6, T7, TResult>(string name, Func<T1, T2, T3, T4, T5, T6, T7, TResult> function, bool isDeterministic = false)
-            => CreateFunctionCore(name, 7, null, IfNotNull<object, TResult>(function, (s, r) => function(r.GetFieldValue<T1>(0), r.GetFieldValue<T2>(1), r.GetFieldValue<T3>(2), r.GetFieldValue<T4>(3), r.GetFieldValue<T5>(4), r.GetFieldValue<T6>(5), r.GetFieldValue<T7>(6))), isDeterministic);
+            => CreateFunctionCore(name, 7, null, SqliteConfiguration.IfNotNull<object, TResult>(function, (s, r) => function(r.GetFieldValue<T1>(0), r.GetFieldValue<T2>(1), r.GetFieldValue<T3>(2), r.GetFieldValue<T4>(3), r.GetFieldValue<T5>(4), r.GetFieldValue<T6>(5), r.GetFieldValue<T7>(6))), isDeterministic);
 
         /// <summary>
         ///     Creates or redefines a SQL function.
@@ -131,7 +131,7 @@ namespace Microsoft.Data.Sqlite
         /// <param name="function">The function to be invoked.</param>
         /// <param name="isDeterministic">Flag indicating whether the function is deterministic.</param>
         public virtual void CreateFunction<T1, T2, T3, T4, T5, T6, T7, T8, TResult>(string name, Func<T1, T2, T3, T4, T5, T6, T7, T8, TResult> function, bool isDeterministic = false)
-            => CreateFunctionCore(name, 8, null, IfNotNull<object, TResult>(function, (s, r) => function(r.GetFieldValue<T1>(0), r.GetFieldValue<T2>(1), r.GetFieldValue<T3>(2), r.GetFieldValue<T4>(3), r.GetFieldValue<T5>(4), r.GetFieldValue<T6>(5), r.GetFieldValue<T7>(6), r.GetFieldValue<T8>(7))), isDeterministic);
+            => CreateFunctionCore(name, 8, null, SqliteConfiguration.IfNotNull<object, TResult>(function, (s, r) => function(r.GetFieldValue<T1>(0), r.GetFieldValue<T2>(1), r.GetFieldValue<T3>(2), r.GetFieldValue<T4>(3), r.GetFieldValue<T5>(4), r.GetFieldValue<T6>(5), r.GetFieldValue<T7>(6), r.GetFieldValue<T8>(7))), isDeterministic);
 
         /// <summary>
         ///     Creates or redefines a SQL function.
@@ -150,7 +150,7 @@ namespace Microsoft.Data.Sqlite
         /// <param name="function">The function to be invoked.</param>
         /// <param name="isDeterministic">Flag indicating whether the function is deterministic.</param>
         public virtual void CreateFunction<T1, T2, T3, T4, T5, T6, T7, T8, T9, TResult>(string name, Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, TResult> function, bool isDeterministic = false)
-            => CreateFunctionCore(name, 9, null, IfNotNull<object, TResult>(function, (s, r) => function(r.GetFieldValue<T1>(0), r.GetFieldValue<T2>(1), r.GetFieldValue<T3>(2), r.GetFieldValue<T4>(3), r.GetFieldValue<T5>(4), r.GetFieldValue<T6>(5), r.GetFieldValue<T7>(6), r.GetFieldValue<T8>(7), r.GetFieldValue<T9>(8))), isDeterministic);
+            => CreateFunctionCore(name, 9, null, SqliteConfiguration.IfNotNull<object, TResult>(function, (s, r) => function(r.GetFieldValue<T1>(0), r.GetFieldValue<T2>(1), r.GetFieldValue<T3>(2), r.GetFieldValue<T4>(3), r.GetFieldValue<T5>(4), r.GetFieldValue<T6>(5), r.GetFieldValue<T7>(6), r.GetFieldValue<T8>(7), r.GetFieldValue<T9>(8))), isDeterministic);
 
         /// <summary>
         ///     Creates or redefines a SQL function.
@@ -170,7 +170,7 @@ namespace Microsoft.Data.Sqlite
         /// <param name="function">The function to be invoked.</param>
         /// <param name="isDeterministic">Flag indicating whether the function is deterministic.</param>
         public virtual void CreateFunction<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, TResult>(string name, Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, TResult> function, bool isDeterministic = false)
-            => CreateFunctionCore(name, 10, null, IfNotNull<object, TResult>(function, (s, r) => function(r.GetFieldValue<T1>(0), r.GetFieldValue<T2>(1), r.GetFieldValue<T3>(2), r.GetFieldValue<T4>(3), r.GetFieldValue<T5>(4), r.GetFieldValue<T6>(5), r.GetFieldValue<T7>(6), r.GetFieldValue<T8>(7), r.GetFieldValue<T9>(8), r.GetFieldValue<T10>(9))), isDeterministic);
+            => CreateFunctionCore(name, 10, null, SqliteConfiguration.IfNotNull<object, TResult>(function, (s, r) => function(r.GetFieldValue<T1>(0), r.GetFieldValue<T2>(1), r.GetFieldValue<T3>(2), r.GetFieldValue<T4>(3), r.GetFieldValue<T5>(4), r.GetFieldValue<T6>(5), r.GetFieldValue<T7>(6), r.GetFieldValue<T8>(7), r.GetFieldValue<T9>(8), r.GetFieldValue<T10>(9))), isDeterministic);
 
         /// <summary>
         ///     Creates or redefines a SQL function.
@@ -191,7 +191,7 @@ namespace Microsoft.Data.Sqlite
         /// <param name="function">The function to be invoked.</param>
         /// <param name="isDeterministic">Flag indicating whether the function is deterministic.</param>
         public virtual void CreateFunction<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, TResult>(string name, Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, TResult> function, bool isDeterministic = false)
-            => CreateFunctionCore(name, 11, null, IfNotNull<object, TResult>(function, (s, r) => function(r.GetFieldValue<T1>(0), r.GetFieldValue<T2>(1), r.GetFieldValue<T3>(2), r.GetFieldValue<T4>(3), r.GetFieldValue<T5>(4), r.GetFieldValue<T6>(5), r.GetFieldValue<T7>(6), r.GetFieldValue<T8>(7), r.GetFieldValue<T9>(8), r.GetFieldValue<T10>(9), r.GetFieldValue<T11>(10))), isDeterministic);
+            => CreateFunctionCore(name, 11, null, SqliteConfiguration.IfNotNull<object, TResult>(function, (s, r) => function(r.GetFieldValue<T1>(0), r.GetFieldValue<T2>(1), r.GetFieldValue<T3>(2), r.GetFieldValue<T4>(3), r.GetFieldValue<T5>(4), r.GetFieldValue<T6>(5), r.GetFieldValue<T7>(6), r.GetFieldValue<T8>(7), r.GetFieldValue<T9>(8), r.GetFieldValue<T10>(9), r.GetFieldValue<T11>(10))), isDeterministic);
 
         /// <summary>
         ///     Creates or redefines a SQL function.
@@ -213,7 +213,7 @@ namespace Microsoft.Data.Sqlite
         /// <param name="function">The function to be invoked.</param>
         /// <param name="isDeterministic">Flag indicating whether the function is deterministic.</param>
         public virtual void CreateFunction<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, TResult>(string name, Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, TResult> function, bool isDeterministic = false)
-            => CreateFunctionCore(name, 12, null, IfNotNull<object, TResult>(function, (s, r) => function(r.GetFieldValue<T1>(0), r.GetFieldValue<T2>(1), r.GetFieldValue<T3>(2), r.GetFieldValue<T4>(3), r.GetFieldValue<T5>(4), r.GetFieldValue<T6>(5), r.GetFieldValue<T7>(6), r.GetFieldValue<T8>(7), r.GetFieldValue<T9>(8), r.GetFieldValue<T10>(9), r.GetFieldValue<T11>(10), r.GetFieldValue<T12>(11))), isDeterministic);
+            => CreateFunctionCore(name, 12, null, SqliteConfiguration.IfNotNull<object, TResult>(function, (s, r) => function(r.GetFieldValue<T1>(0), r.GetFieldValue<T2>(1), r.GetFieldValue<T3>(2), r.GetFieldValue<T4>(3), r.GetFieldValue<T5>(4), r.GetFieldValue<T6>(5), r.GetFieldValue<T7>(6), r.GetFieldValue<T8>(7), r.GetFieldValue<T9>(8), r.GetFieldValue<T10>(9), r.GetFieldValue<T11>(10), r.GetFieldValue<T12>(11))), isDeterministic);
 
         /// <summary>
         ///     Creates or redefines a SQL function.
@@ -236,7 +236,7 @@ namespace Microsoft.Data.Sqlite
         /// <param name="function">The function to be invoked.</param>
         /// <param name="isDeterministic">Flag indicating whether the function is deterministic.</param>
         public virtual void CreateFunction<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, TResult>(string name, Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, TResult> function, bool isDeterministic = false)
-            => CreateFunctionCore(name, 13, null, IfNotNull<object, TResult>(function, (s, r) => function(r.GetFieldValue<T1>(0), r.GetFieldValue<T2>(1), r.GetFieldValue<T3>(2), r.GetFieldValue<T4>(3), r.GetFieldValue<T5>(4), r.GetFieldValue<T6>(5), r.GetFieldValue<T7>(6), r.GetFieldValue<T8>(7), r.GetFieldValue<T9>(8), r.GetFieldValue<T10>(9), r.GetFieldValue<T11>(10), r.GetFieldValue<T12>(11), r.GetFieldValue<T13>(12))), isDeterministic);
+            => CreateFunctionCore(name, 13, null, SqliteConfiguration.IfNotNull<object, TResult>(function, (s, r) => function(r.GetFieldValue<T1>(0), r.GetFieldValue<T2>(1), r.GetFieldValue<T3>(2), r.GetFieldValue<T4>(3), r.GetFieldValue<T5>(4), r.GetFieldValue<T6>(5), r.GetFieldValue<T7>(6), r.GetFieldValue<T8>(7), r.GetFieldValue<T9>(8), r.GetFieldValue<T10>(9), r.GetFieldValue<T11>(10), r.GetFieldValue<T12>(11), r.GetFieldValue<T13>(12))), isDeterministic);
 
         /// <summary>
         ///     Creates or redefines a SQL function.
@@ -260,7 +260,7 @@ namespace Microsoft.Data.Sqlite
         /// <param name="function">The function to be invoked.</param>
         /// <param name="isDeterministic">Flag indicating whether the function is deterministic.</param>
         public virtual void CreateFunction<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, TResult>(string name, Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, TResult> function, bool isDeterministic = false)
-            => CreateFunctionCore(name, 14, null, IfNotNull<object, TResult>(function, (s, r) => function(r.GetFieldValue<T1>(0), r.GetFieldValue<T2>(1), r.GetFieldValue<T3>(2), r.GetFieldValue<T4>(3), r.GetFieldValue<T5>(4), r.GetFieldValue<T6>(5), r.GetFieldValue<T7>(6), r.GetFieldValue<T8>(7), r.GetFieldValue<T9>(8), r.GetFieldValue<T10>(9), r.GetFieldValue<T11>(10), r.GetFieldValue<T12>(11), r.GetFieldValue<T13>(12), r.GetFieldValue<T14>(13))), isDeterministic);
+            => CreateFunctionCore(name, 14, null, SqliteConfiguration.IfNotNull<object, TResult>(function, (s, r) => function(r.GetFieldValue<T1>(0), r.GetFieldValue<T2>(1), r.GetFieldValue<T3>(2), r.GetFieldValue<T4>(3), r.GetFieldValue<T5>(4), r.GetFieldValue<T6>(5), r.GetFieldValue<T7>(6), r.GetFieldValue<T8>(7), r.GetFieldValue<T9>(8), r.GetFieldValue<T10>(9), r.GetFieldValue<T11>(10), r.GetFieldValue<T12>(11), r.GetFieldValue<T13>(12), r.GetFieldValue<T14>(13))), isDeterministic);
 
         /// <summary>
         ///     Creates or redefines a SQL function.
@@ -285,7 +285,7 @@ namespace Microsoft.Data.Sqlite
         /// <param name="function">The function to be invoked.</param>
         /// <param name="isDeterministic">Flag indicating whether the function is deterministic.</param>
         public virtual void CreateFunction<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, TResult>(string name, Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, TResult> function, bool isDeterministic = false)
-            => CreateFunctionCore(name, 15, null, IfNotNull<object, TResult>(function, (s, r) => function(r.GetFieldValue<T1>(0), r.GetFieldValue<T2>(1), r.GetFieldValue<T3>(2), r.GetFieldValue<T4>(3), r.GetFieldValue<T5>(4), r.GetFieldValue<T6>(5), r.GetFieldValue<T7>(6), r.GetFieldValue<T8>(7), r.GetFieldValue<T9>(8), r.GetFieldValue<T10>(9), r.GetFieldValue<T11>(10), r.GetFieldValue<T12>(11), r.GetFieldValue<T13>(12), r.GetFieldValue<T14>(13), r.GetFieldValue<T15>(14))), isDeterministic);
+            => CreateFunctionCore(name, 15, null, SqliteConfiguration.IfNotNull<object, TResult>(function, (s, r) => function(r.GetFieldValue<T1>(0), r.GetFieldValue<T2>(1), r.GetFieldValue<T3>(2), r.GetFieldValue<T4>(3), r.GetFieldValue<T5>(4), r.GetFieldValue<T6>(5), r.GetFieldValue<T7>(6), r.GetFieldValue<T8>(7), r.GetFieldValue<T9>(8), r.GetFieldValue<T10>(9), r.GetFieldValue<T11>(10), r.GetFieldValue<T12>(11), r.GetFieldValue<T13>(12), r.GetFieldValue<T14>(13), r.GetFieldValue<T15>(14))), isDeterministic);
 
         /// <summary>
         ///     Creates or redefines a SQL function.
@@ -311,7 +311,7 @@ namespace Microsoft.Data.Sqlite
         /// <param name="function">The function to be invoked.</param>
         /// <param name="isDeterministic">Flag indicating whether the function is deterministic.</param>
         public virtual void CreateFunction<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, TResult>(string name, Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, TResult> function, bool isDeterministic = false)
-            => CreateFunctionCore(name, 16, null, IfNotNull<object, TResult>(function, (s, r) => function(r.GetFieldValue<T1>(0), r.GetFieldValue<T2>(1), r.GetFieldValue<T3>(2), r.GetFieldValue<T4>(3), r.GetFieldValue<T5>(4), r.GetFieldValue<T6>(5), r.GetFieldValue<T7>(6), r.GetFieldValue<T8>(7), r.GetFieldValue<T9>(8), r.GetFieldValue<T10>(9), r.GetFieldValue<T11>(10), r.GetFieldValue<T12>(11), r.GetFieldValue<T13>(12), r.GetFieldValue<T14>(13), r.GetFieldValue<T15>(14), r.GetFieldValue<T16>(15))), isDeterministic);
+            => CreateFunctionCore(name, 16, null, SqliteConfiguration.IfNotNull<object, TResult>(function, (s, r) => function(r.GetFieldValue<T1>(0), r.GetFieldValue<T2>(1), r.GetFieldValue<T3>(2), r.GetFieldValue<T4>(3), r.GetFieldValue<T5>(4), r.GetFieldValue<T6>(5), r.GetFieldValue<T7>(6), r.GetFieldValue<T8>(7), r.GetFieldValue<T9>(8), r.GetFieldValue<T10>(9), r.GetFieldValue<T11>(10), r.GetFieldValue<T12>(11), r.GetFieldValue<T13>(12), r.GetFieldValue<T14>(13), r.GetFieldValue<T15>(14), r.GetFieldValue<T16>(15))), isDeterministic);
 
         /// <summary>
         ///     Creates or redefines a SQL function.
@@ -321,7 +321,7 @@ namespace Microsoft.Data.Sqlite
         /// <param name="function">The function to be invoked.</param>
         /// <param name="isDeterministic">Flag indicating whether the function is deterministic.</param>
         public virtual void CreateFunction<TResult>(string name, Func<object[], TResult> function, bool isDeterministic = false)
-            => CreateFunctionCore(name, -1, null, IfNotNull<object, TResult>(function, (s, r) => function(GetValues(r))), isDeterministic);
+            => CreateFunctionCore(name, -1, null, SqliteConfiguration.IfNotNull<object, TResult>(function, (s, r) => function(SqliteConfiguration.GetValues(r))), isDeterministic);
 
         /// <summary>
         ///     Creates or redefines a SQL function.
@@ -333,7 +333,7 @@ namespace Microsoft.Data.Sqlite
         /// <param name="function">The function to be invoked.</param>
         /// <param name="isDeterministic">Flag indicating whether the function is deterministic.</param>
         public virtual void CreateFunction<TState, TResult>(string name, TState state, Func<TState, TResult> function, bool isDeterministic = false)
-            => CreateFunctionCore(name, 0, state, IfNotNull<TState, TResult>(function, (s, r) => function(s)), isDeterministic);
+            => CreateFunctionCore(name, 0, state, SqliteConfiguration.IfNotNull<TState, TResult>(function, (s, r) => function(s)), isDeterministic);
 
         /// <summary>
         ///     Creates or redefines a SQL function.
@@ -346,7 +346,7 @@ namespace Microsoft.Data.Sqlite
         /// <param name="function">The function to be invoked.</param>
         /// <param name="isDeterministic">Flag indicating whether the function is deterministic.</param>
         public virtual void CreateFunction<TState, T1, TResult>(string name, TState state, Func<TState, T1, TResult> function, bool isDeterministic = false)
-            => CreateFunctionCore(name, 1, state, IfNotNull<TState, TResult>(function, (s, r) => function(s, r.GetFieldValue<T1>(0))), isDeterministic);
+            => CreateFunctionCore(name, 1, state, SqliteConfiguration.IfNotNull<TState, TResult>(function, (s, r) => function(s, r.GetFieldValue<T1>(0))), isDeterministic);
 
         /// <summary>
         ///     Creates or redefines a SQL function.
@@ -360,7 +360,7 @@ namespace Microsoft.Data.Sqlite
         /// <param name="function">The function to be invoked.</param>
         /// <param name="isDeterministic">Flag indicating whether the function is deterministic.</param>
         public virtual void CreateFunction<TState, T1, T2, TResult>(string name, TState state, Func<TState, T1, T2, TResult> function, bool isDeterministic = false)
-            => CreateFunctionCore(name, 2, state, IfNotNull<TState, TResult>(function, (s, r) => function(s, r.GetFieldValue<T1>(0), r.GetFieldValue<T2>(1))), isDeterministic);
+            => CreateFunctionCore(name, 2, state, SqliteConfiguration.IfNotNull<TState, TResult>(function, (s, r) => function(s, r.GetFieldValue<T1>(0), r.GetFieldValue<T2>(1))), isDeterministic);
 
         /// <summary>
         ///     Creates or redefines a SQL function.
@@ -375,7 +375,7 @@ namespace Microsoft.Data.Sqlite
         /// <param name="function">The function to be invoked.</param>
         /// <param name="isDeterministic">Flag indicating whether the function is deterministic.</param>
         public virtual void CreateFunction<TState, T1, T2, T3, TResult>(string name, TState state, Func<TState, T1, T2, T3, TResult> function, bool isDeterministic = false)
-            => CreateFunctionCore(name, 3, state, IfNotNull<TState, TResult>(function, (s, r) => function(s, r.GetFieldValue<T1>(0), r.GetFieldValue<T2>(1), r.GetFieldValue<T3>(2))), isDeterministic);
+            => CreateFunctionCore(name, 3, state, SqliteConfiguration.IfNotNull<TState, TResult>(function, (s, r) => function(s, r.GetFieldValue<T1>(0), r.GetFieldValue<T2>(1), r.GetFieldValue<T3>(2))), isDeterministic);
 
         /// <summary>
         ///     Creates or redefines a SQL function.
@@ -391,7 +391,7 @@ namespace Microsoft.Data.Sqlite
         /// <param name="function">The function to be invoked.</param>
         /// <param name="isDeterministic">Flag indicating whether the function is deterministic.</param>
         public virtual void CreateFunction<TState, T1, T2, T3, T4, TResult>(string name, TState state, Func<TState, T1, T2, T3, T4, TResult> function, bool isDeterministic = false)
-            => CreateFunctionCore(name, 4, state, IfNotNull<TState, TResult>(function, (s, r) => function(s, r.GetFieldValue<T1>(0), r.GetFieldValue<T2>(1), r.GetFieldValue<T3>(2), r.GetFieldValue<T4>(3))), isDeterministic);
+            => CreateFunctionCore(name, 4, state, SqliteConfiguration.IfNotNull<TState, TResult>(function, (s, r) => function(s, r.GetFieldValue<T1>(0), r.GetFieldValue<T2>(1), r.GetFieldValue<T3>(2), r.GetFieldValue<T4>(3))), isDeterministic);
 
         /// <summary>
         ///     Creates or redefines a SQL function.
@@ -408,7 +408,7 @@ namespace Microsoft.Data.Sqlite
         /// <param name="function">The function to be invoked.</param>
         /// <param name="isDeterministic">Flag indicating whether the function is deterministic.</param>
         public virtual void CreateFunction<TState, T1, T2, T3, T4, T5, TResult>(string name, TState state, Func<TState, T1, T2, T3, T4, T5, TResult> function, bool isDeterministic = false)
-            => CreateFunctionCore(name, 5, state, IfNotNull<TState, TResult>(function, (s, r) => function(s, r.GetFieldValue<T1>(0), r.GetFieldValue<T2>(1), r.GetFieldValue<T3>(2), r.GetFieldValue<T4>(3), r.GetFieldValue<T5>(4))), isDeterministic);
+            => CreateFunctionCore(name, 5, state, SqliteConfiguration.IfNotNull<TState, TResult>(function, (s, r) => function(s, r.GetFieldValue<T1>(0), r.GetFieldValue<T2>(1), r.GetFieldValue<T3>(2), r.GetFieldValue<T4>(3), r.GetFieldValue<T5>(4))), isDeterministic);
 
         /// <summary>
         ///     Creates or redefines a SQL function.
@@ -426,7 +426,7 @@ namespace Microsoft.Data.Sqlite
         /// <param name="function">The function to be invoked.</param>
         /// <param name="isDeterministic">Flag indicating whether the function is deterministic.</param>
         public virtual void CreateFunction<TState, T1, T2, T3, T4, T5, T6, TResult>(string name, TState state, Func<TState, T1, T2, T3, T4, T5, T6, TResult> function, bool isDeterministic = false)
-            => CreateFunctionCore(name, 6, state, IfNotNull<TState, TResult>(function, (s, r) => function(s, r.GetFieldValue<T1>(0), r.GetFieldValue<T2>(1), r.GetFieldValue<T3>(2), r.GetFieldValue<T4>(3), r.GetFieldValue<T5>(4), r.GetFieldValue<T6>(5))), isDeterministic);
+            => CreateFunctionCore(name, 6, state, SqliteConfiguration.IfNotNull<TState, TResult>(function, (s, r) => function(s, r.GetFieldValue<T1>(0), r.GetFieldValue<T2>(1), r.GetFieldValue<T3>(2), r.GetFieldValue<T4>(3), r.GetFieldValue<T5>(4), r.GetFieldValue<T6>(5))), isDeterministic);
 
         /// <summary>
         ///     Creates or redefines a SQL function.
@@ -445,7 +445,7 @@ namespace Microsoft.Data.Sqlite
         /// <param name="function">The function to be invoked.</param>
         /// <param name="isDeterministic">Flag indicating whether the function is deterministic.</param>
         public virtual void CreateFunction<TState, T1, T2, T3, T4, T5, T6, T7, TResult>(string name, TState state, Func<TState, T1, T2, T3, T4, T5, T6, T7, TResult> function, bool isDeterministic = false)
-            => CreateFunctionCore(name, 7, state, IfNotNull<TState, TResult>(function, (s, r) => function(s, r.GetFieldValue<T1>(0), r.GetFieldValue<T2>(1), r.GetFieldValue<T3>(2), r.GetFieldValue<T4>(3), r.GetFieldValue<T5>(4), r.GetFieldValue<T6>(5), r.GetFieldValue<T7>(6))), isDeterministic);
+            => CreateFunctionCore(name, 7, state, SqliteConfiguration.IfNotNull<TState, TResult>(function, (s, r) => function(s, r.GetFieldValue<T1>(0), r.GetFieldValue<T2>(1), r.GetFieldValue<T3>(2), r.GetFieldValue<T4>(3), r.GetFieldValue<T5>(4), r.GetFieldValue<T6>(5), r.GetFieldValue<T7>(6))), isDeterministic);
 
         /// <summary>
         ///     Creates or redefines a SQL function.
@@ -465,7 +465,7 @@ namespace Microsoft.Data.Sqlite
         /// <param name="function">The function to be invoked.</param>
         /// <param name="isDeterministic">Flag indicating whether the function is deterministic.</param>
         public virtual void CreateFunction<TState, T1, T2, T3, T4, T5, T6, T7, T8, TResult>(string name, TState state, Func<TState, T1, T2, T3, T4, T5, T6, T7, T8, TResult> function, bool isDeterministic = false)
-            => CreateFunctionCore(name, 8, state, IfNotNull<TState, TResult>(function, (s, r) => function(s, r.GetFieldValue<T1>(0), r.GetFieldValue<T2>(1), r.GetFieldValue<T3>(2), r.GetFieldValue<T4>(3), r.GetFieldValue<T5>(4), r.GetFieldValue<T6>(5), r.GetFieldValue<T7>(6), r.GetFieldValue<T8>(7))), isDeterministic);
+            => CreateFunctionCore(name, 8, state, SqliteConfiguration.IfNotNull<TState, TResult>(function, (s, r) => function(s, r.GetFieldValue<T1>(0), r.GetFieldValue<T2>(1), r.GetFieldValue<T3>(2), r.GetFieldValue<T4>(3), r.GetFieldValue<T5>(4), r.GetFieldValue<T6>(5), r.GetFieldValue<T7>(6), r.GetFieldValue<T8>(7))), isDeterministic);
 
         /// <summary>
         ///     Creates or redefines a SQL function.
@@ -486,7 +486,7 @@ namespace Microsoft.Data.Sqlite
         /// <param name="function">The function to be invoked.</param>
         /// <param name="isDeterministic">Flag indicating whether the function is deterministic.</param>
         public virtual void CreateFunction<TState, T1, T2, T3, T4, T5, T6, T7, T8, T9, TResult>(string name, TState state, Func<TState, T1, T2, T3, T4, T5, T6, T7, T8, T9, TResult> function, bool isDeterministic = false)
-            => CreateFunctionCore(name, 9, state, IfNotNull<TState, TResult>(function, (s, r) => function(s, r.GetFieldValue<T1>(0), r.GetFieldValue<T2>(1), r.GetFieldValue<T3>(2), r.GetFieldValue<T4>(3), r.GetFieldValue<T5>(4), r.GetFieldValue<T6>(5), r.GetFieldValue<T7>(6), r.GetFieldValue<T8>(7), r.GetFieldValue<T9>(8))), isDeterministic);
+            => CreateFunctionCore(name, 9, state, SqliteConfiguration.IfNotNull<TState, TResult>(function, (s, r) => function(s, r.GetFieldValue<T1>(0), r.GetFieldValue<T2>(1), r.GetFieldValue<T3>(2), r.GetFieldValue<T4>(3), r.GetFieldValue<T5>(4), r.GetFieldValue<T6>(5), r.GetFieldValue<T7>(6), r.GetFieldValue<T8>(7), r.GetFieldValue<T9>(8))), isDeterministic);
 
         /// <summary>
         ///     Creates or redefines a SQL function.
@@ -508,7 +508,7 @@ namespace Microsoft.Data.Sqlite
         /// <param name="function">The function to be invoked.</param>
         /// <param name="isDeterministic">Flag indicating whether the function is deterministic.</param>
         public virtual void CreateFunction<TState, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, TResult>(string name, TState state, Func<TState, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, TResult> function, bool isDeterministic = false)
-            => CreateFunctionCore(name, 10, state, IfNotNull<TState, TResult>(function, (s, r) => function(s, r.GetFieldValue<T1>(0), r.GetFieldValue<T2>(1), r.GetFieldValue<T3>(2), r.GetFieldValue<T4>(3), r.GetFieldValue<T5>(4), r.GetFieldValue<T6>(5), r.GetFieldValue<T7>(6), r.GetFieldValue<T8>(7), r.GetFieldValue<T9>(8), r.GetFieldValue<T10>(9))), isDeterministic);
+            => CreateFunctionCore(name, 10, state, SqliteConfiguration.IfNotNull<TState, TResult>(function, (s, r) => function(s, r.GetFieldValue<T1>(0), r.GetFieldValue<T2>(1), r.GetFieldValue<T3>(2), r.GetFieldValue<T4>(3), r.GetFieldValue<T5>(4), r.GetFieldValue<T6>(5), r.GetFieldValue<T7>(6), r.GetFieldValue<T8>(7), r.GetFieldValue<T9>(8), r.GetFieldValue<T10>(9))), isDeterministic);
 
         /// <summary>
         ///     Creates or redefines a SQL function.
@@ -531,7 +531,7 @@ namespace Microsoft.Data.Sqlite
         /// <param name="function">The function to be invoked.</param>
         /// <param name="isDeterministic">Flag indicating whether the function is deterministic.</param>
         public virtual void CreateFunction<TState, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, TResult>(string name, TState state, Func<TState, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, TResult> function, bool isDeterministic = false)
-            => CreateFunctionCore(name, 11, state, IfNotNull<TState, TResult>(function, (s, r) => function(s, r.GetFieldValue<T1>(0), r.GetFieldValue<T2>(1), r.GetFieldValue<T3>(2), r.GetFieldValue<T4>(3), r.GetFieldValue<T5>(4), r.GetFieldValue<T6>(5), r.GetFieldValue<T7>(6), r.GetFieldValue<T8>(7), r.GetFieldValue<T9>(8), r.GetFieldValue<T10>(9), r.GetFieldValue<T11>(10))), isDeterministic);
+            => CreateFunctionCore(name, 11, state, SqliteConfiguration.IfNotNull<TState, TResult>(function, (s, r) => function(s, r.GetFieldValue<T1>(0), r.GetFieldValue<T2>(1), r.GetFieldValue<T3>(2), r.GetFieldValue<T4>(3), r.GetFieldValue<T5>(4), r.GetFieldValue<T6>(5), r.GetFieldValue<T7>(6), r.GetFieldValue<T8>(7), r.GetFieldValue<T9>(8), r.GetFieldValue<T10>(9), r.GetFieldValue<T11>(10))), isDeterministic);
 
         /// <summary>
         ///     Creates or redefines a SQL function.
@@ -555,7 +555,7 @@ namespace Microsoft.Data.Sqlite
         /// <param name="function">The function to be invoked.</param>
         /// <param name="isDeterministic">Flag indicating whether the function is deterministic.</param>
         public virtual void CreateFunction<TState, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, TResult>(string name, TState state, Func<TState, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, TResult> function, bool isDeterministic = false)
-            => CreateFunctionCore(name, 12, state, IfNotNull<TState, TResult>(function, (s, r) => function(s, r.GetFieldValue<T1>(0), r.GetFieldValue<T2>(1), r.GetFieldValue<T3>(2), r.GetFieldValue<T4>(3), r.GetFieldValue<T5>(4), r.GetFieldValue<T6>(5), r.GetFieldValue<T7>(6), r.GetFieldValue<T8>(7), r.GetFieldValue<T9>(8), r.GetFieldValue<T10>(9), r.GetFieldValue<T11>(10), r.GetFieldValue<T12>(11))), isDeterministic);
+            => CreateFunctionCore(name, 12, state, SqliteConfiguration.IfNotNull<TState, TResult>(function, (s, r) => function(s, r.GetFieldValue<T1>(0), r.GetFieldValue<T2>(1), r.GetFieldValue<T3>(2), r.GetFieldValue<T4>(3), r.GetFieldValue<T5>(4), r.GetFieldValue<T6>(5), r.GetFieldValue<T7>(6), r.GetFieldValue<T8>(7), r.GetFieldValue<T9>(8), r.GetFieldValue<T10>(9), r.GetFieldValue<T11>(10), r.GetFieldValue<T12>(11))), isDeterministic);
 
         /// <summary>
         ///     Creates or redefines a SQL function.
@@ -580,7 +580,7 @@ namespace Microsoft.Data.Sqlite
         /// <param name="function">The function to be invoked.</param>
         /// <param name="isDeterministic">Flag indicating whether the function is deterministic.</param>
         public virtual void CreateFunction<TState, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, TResult>(string name, TState state, Func<TState, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, TResult> function, bool isDeterministic = false)
-            => CreateFunctionCore(name, 13, state, IfNotNull<TState, TResult>(function, (s, r) => function(s, r.GetFieldValue<T1>(0), r.GetFieldValue<T2>(1), r.GetFieldValue<T3>(2), r.GetFieldValue<T4>(3), r.GetFieldValue<T5>(4), r.GetFieldValue<T6>(5), r.GetFieldValue<T7>(6), r.GetFieldValue<T8>(7), r.GetFieldValue<T9>(8), r.GetFieldValue<T10>(9), r.GetFieldValue<T11>(10), r.GetFieldValue<T12>(11), r.GetFieldValue<T13>(12))), isDeterministic);
+            => CreateFunctionCore(name, 13, state, SqliteConfiguration.IfNotNull<TState, TResult>(function, (s, r) => function(s, r.GetFieldValue<T1>(0), r.GetFieldValue<T2>(1), r.GetFieldValue<T3>(2), r.GetFieldValue<T4>(3), r.GetFieldValue<T5>(4), r.GetFieldValue<T6>(5), r.GetFieldValue<T7>(6), r.GetFieldValue<T8>(7), r.GetFieldValue<T9>(8), r.GetFieldValue<T10>(9), r.GetFieldValue<T11>(10), r.GetFieldValue<T12>(11), r.GetFieldValue<T13>(12))), isDeterministic);
 
         /// <summary>
         ///     Creates or redefines a SQL function.
@@ -606,7 +606,7 @@ namespace Microsoft.Data.Sqlite
         /// <param name="function">The function to be invoked.</param>
         /// <param name="isDeterministic">Flag indicating whether the function is deterministic.</param>
         public virtual void CreateFunction<TState, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, TResult>(string name, TState state, Func<TState, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, TResult> function, bool isDeterministic = false)
-            => CreateFunctionCore(name, 14, state, IfNotNull<TState, TResult>(function, (s, r) => function(s, r.GetFieldValue<T1>(0), r.GetFieldValue<T2>(1), r.GetFieldValue<T3>(2), r.GetFieldValue<T4>(3), r.GetFieldValue<T5>(4), r.GetFieldValue<T6>(5), r.GetFieldValue<T7>(6), r.GetFieldValue<T8>(7), r.GetFieldValue<T9>(8), r.GetFieldValue<T10>(9), r.GetFieldValue<T11>(10), r.GetFieldValue<T12>(11), r.GetFieldValue<T13>(12), r.GetFieldValue<T14>(13))), isDeterministic);
+            => CreateFunctionCore(name, 14, state, SqliteConfiguration.IfNotNull<TState, TResult>(function, (s, r) => function(s, r.GetFieldValue<T1>(0), r.GetFieldValue<T2>(1), r.GetFieldValue<T3>(2), r.GetFieldValue<T4>(3), r.GetFieldValue<T5>(4), r.GetFieldValue<T6>(5), r.GetFieldValue<T7>(6), r.GetFieldValue<T8>(7), r.GetFieldValue<T9>(8), r.GetFieldValue<T10>(9), r.GetFieldValue<T11>(10), r.GetFieldValue<T12>(11), r.GetFieldValue<T13>(12), r.GetFieldValue<T14>(13))), isDeterministic);
 
         /// <summary>
         ///     Creates or redefines a SQL function.
@@ -633,7 +633,7 @@ namespace Microsoft.Data.Sqlite
         /// <param name="function">The function to be invoked.</param>
         /// <param name="isDeterministic">Flag indicating whether the function is deterministic.</param>
         public virtual void CreateFunction<TState, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, TResult>(string name, TState state, Func<TState, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, TResult> function, bool isDeterministic = false)
-            => CreateFunctionCore(name, 15, state, IfNotNull<TState, TResult>(function, (s, r) => function(s, r.GetFieldValue<T1>(0), r.GetFieldValue<T2>(1), r.GetFieldValue<T3>(2), r.GetFieldValue<T4>(3), r.GetFieldValue<T5>(4), r.GetFieldValue<T6>(5), r.GetFieldValue<T7>(6), r.GetFieldValue<T8>(7), r.GetFieldValue<T9>(8), r.GetFieldValue<T10>(9), r.GetFieldValue<T11>(10), r.GetFieldValue<T12>(11), r.GetFieldValue<T13>(12), r.GetFieldValue<T14>(13), r.GetFieldValue<T15>(14))), isDeterministic);
+            => CreateFunctionCore(name, 15, state, SqliteConfiguration.IfNotNull<TState, TResult>(function, (s, r) => function(s, r.GetFieldValue<T1>(0), r.GetFieldValue<T2>(1), r.GetFieldValue<T3>(2), r.GetFieldValue<T4>(3), r.GetFieldValue<T5>(4), r.GetFieldValue<T6>(5), r.GetFieldValue<T7>(6), r.GetFieldValue<T8>(7), r.GetFieldValue<T9>(8), r.GetFieldValue<T10>(9), r.GetFieldValue<T11>(10), r.GetFieldValue<T12>(11), r.GetFieldValue<T13>(12), r.GetFieldValue<T14>(13), r.GetFieldValue<T15>(14))), isDeterministic);
 
         /// <summary>
         ///     Creates or redefines a SQL function.
@@ -645,6 +645,6 @@ namespace Microsoft.Data.Sqlite
         /// <param name="function">The function to be invoked.</param>
         /// <param name="isDeterministic">Flag indicating whether the function is deterministic.</param>
         public virtual void CreateFunction<TState, TResult>(string name, TState state, Func<TState, object[], TResult> function, bool isDeterministic = false)
-            => CreateFunctionCore(name, -1, state, IfNotNull<TState, TResult>(function, (s, r) => function(s, GetValues(r))), isDeterministic);
+            => CreateFunctionCore(name, -1, state, SqliteConfiguration.IfNotNull<TState, TResult>(function, (s, r) => function(s, SqliteConfiguration.GetValues(r))), isDeterministic);
     }
 }

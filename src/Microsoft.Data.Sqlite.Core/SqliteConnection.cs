@@ -21,6 +21,7 @@ namespace Microsoft.Data.Sqlite
         private const string MainDatabaseName = "main";
 
         private readonly IList<WeakReference<SqliteCommand>> _commands = new List<WeakReference<SqliteCommand>>();
+        private readonly SqliteConfiguration _configuration = new SqliteConfiguration();
 
         private string _connectionString;
         private ConnectionState _state;
@@ -33,16 +34,51 @@ namespace Microsoft.Data.Sqlite
         ///     Initializes a new instance of the <see cref="SqliteConnection" /> class.
         /// </summary>
         public SqliteConnection()
-        {
-        }
+            => StateChange += (_, e) =>
+            {
+                if (e.CurrentState == ConnectionState.Open)
+                {
+                    SetForeignKeys();
+                    SetRecursiveTriggers();
+                    SetJournalMode();
+                    SetSynchronous();
+                    SetAutoVacuum();
+                    SetAutomaticIndex();
+
+                    foreach (var (name, collation, obj) in _configuration.Collations)
+                    {
+                        CreateCollationCore(name, collation, obj);
+                    }
+
+                    foreach (var (name, arity, func, flags, obj) in _configuration.Functions)
+                    {
+                        CreateFunctionCore(name, arity, func, flags, obj);
+                    }
+
+                    foreach (var (name, arity, flags, obj, func_step, func_final) in _configuration.Aggregates)
+                    {
+                        CreateAggregateCore(name, arity, flags, obj, func_step, func_final);
+                    }
+                }
+            };
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="SqliteConnection" /> class.
         /// </summary>
         /// <param name="connectionString">The string used to open the connection.</param>
         /// <seealso cref="SqliteConnectionStringBuilder" />
-        public SqliteConnection(string connectionString)
+        public SqliteConnection(string connectionString) : this()
             => ConnectionString = connectionString;
+
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="SqliteConnection" /> class.
+        /// </summary>
+        /// <param name="connectionString">The string used to open the connection.</param>
+        /// <param name="sqliteConfiguration">The configuration of the connection.</param>
+        /// <seealso cref="SqliteConnectionStringBuilder" />
+        public SqliteConnection(string connectionString, SqliteConfiguration sqliteConfiguration)
+            : this(connectionString)
+            => _configuration = sqliteConfiguration.Clone();
 
         /// <summary>
         ///     Gets a handle to underlying database connection.
@@ -122,6 +158,242 @@ namespace Microsoft.Data.Sqlite
             => _state;
 
         /// <summary>
+        /// Gets or sets a value indicating whether foreign key constraints are enforced.
+        /// </summary>
+        /// <value>A value indicating whether foreign key constraints are enforced.</value>
+        public bool? ForeignKeys
+        {
+            get => _configuration.ForeignKeys;
+            set
+            {
+                if (_configuration.ForeignKeys != value)
+                {
+                    if (_state != ConnectionState.Closed)
+                    {
+                        throw new InvalidOperationException(Resources.SetterRequiresClosedConnection(nameof(ForeignKeys)));
+                    }
+
+                    _configuration.ForeignKeys = value;
+                    SetForeignKeys();
+                }
+            }
+        }
+
+        private void SetForeignKeys()
+        {
+            if (_configuration.ForeignKeys.HasValue && _state == ConnectionState.Open)
+            {
+                this.ExecuteNonQuery($"PRAGMA foreign_keys = {(_configuration.ForeignKeys.Value ? "1" : "0")};");
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether recursive triggers are enabled.
+        /// </summary>
+        /// <value>A value indicating whether recursive triggers are enabled.</value>
+        public bool? RecursiveTriggers
+        {
+            get => _configuration.RecursiveTriggers;
+            set
+            {
+                if (_configuration.RecursiveTriggers != value)
+                {
+                    if (_state != ConnectionState.Closed)
+                    {
+                        throw new InvalidOperationException(Resources.SetterRequiresClosedConnection(nameof(RecursiveTriggers)));
+                    }
+
+                    _configuration.RecursiveTriggers = value;
+                    SetRecursiveTriggers();
+                }
+            }
+        }
+
+        private void SetRecursiveTriggers()
+        {
+            if (_configuration.RecursiveTriggers.HasValue && _state == ConnectionState.Open)
+            {
+                this.ExecuteNonQuery($"PRAGMA recursive_triggers = {(_configuration.RecursiveTriggers.Value ? "1" : "0")};");
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether automatic indexing is enabled.
+        /// </summary>
+        /// <value>A value indicating whether automatic indexing is enabled.</value>
+        public bool? AutomaticIndex
+        {
+            get => _configuration.AutomaticIndex;
+            set
+            {
+                if (_configuration.AutomaticIndex != value)
+                {
+                    if (_state != ConnectionState.Closed)
+                    {
+                        throw new InvalidOperationException(Resources.SetterRequiresClosedConnection(nameof(RecursiveTriggers)));
+                    }
+
+                    _configuration.AutomaticIndex = value;
+                    SetAutomaticIndex();
+                }
+            }
+        }
+
+        private void SetAutomaticIndex()
+        {
+            if (_configuration.AutomaticIndex.HasValue && _state == ConnectionState.Open)
+            {
+                this.ExecuteNonQuery($"PRAGMA automatic_index = {(_configuration.AutomaticIndex.Value ? "1" : "0")};");
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the journaling mode.
+        /// </summary>
+        /// <value>The journaling mode.</value>
+        public SqliteJournalMode JournalMode
+        {
+            get => _configuration.JournalMode;
+            set
+            {
+                if (_configuration.JournalMode != value)
+                {
+                    if (_state != ConnectionState.Closed)
+                    {
+                        throw new InvalidOperationException(Resources.SetterRequiresClosedConnection(nameof(JournalMode)));
+                    }
+
+                    _configuration.JournalMode = value;
+                    SetJournalMode();
+                }
+            }
+        }
+
+        private void SetJournalMode()
+        {
+            if (_state != ConnectionState.Open)
+            {
+                return;
+            }
+
+            string mode = null;
+            switch (_configuration.JournalMode)
+            {
+                case SqliteJournalMode.Undefined:
+                    return;
+                case SqliteJournalMode.Delete:
+                    mode = "DELETE";
+                    break;
+                case SqliteJournalMode.Truncate:
+                    mode = "TRUNCATE";
+                    break;
+                case SqliteJournalMode.Persist:
+                    mode = "PERSIST";
+                    break;
+                case SqliteJournalMode.Memory:
+                    mode = "MEMORY";
+                    break;
+                case SqliteJournalMode.WAL:
+                    mode = "WAL";
+                    break;
+                case SqliteJournalMode.Off:
+                    mode = "OFF";
+                    break;
+            }
+
+            this.ExecuteNonQuery($"PRAGMA journal_mode = {mode};");
+        }
+
+        /// <summary>
+        /// Gets or sets the synchronous setting.
+        /// </summary>
+        /// <value>The synchronous setting.</value>
+        public SqliteSynchronousMode Synchronous
+        {
+            get => _configuration.Synchronous;
+            set
+            {
+                if (_configuration.Synchronous != value)
+                {
+                    _configuration.Synchronous = value;
+                    SetSynchronous();
+                }
+            }
+        }
+
+        private void SetSynchronous()
+        {
+            if (_state != ConnectionState.Open)
+            {
+                return;
+            }
+
+            string mode = null;
+            switch (_configuration.Synchronous)
+            {
+                case SqliteSynchronousMode.Undefined:
+                    return;
+                case SqliteSynchronousMode.Extra:
+                    mode = "EXTRA";
+                    break;
+                case SqliteSynchronousMode.Full:
+                    mode = "FULL";
+                    break;
+                case SqliteSynchronousMode.Normal:
+                    mode = "NORMAL ";
+                    break;
+                case SqliteSynchronousMode.Off:
+                    mode = "OFF";
+                    break;
+            }
+
+            this.ExecuteNonQuery($"PRAGMA synchronous = {mode};");
+        }
+
+        /// <summary>
+        /// Gets or sets the auto vacuum mode.
+        /// </summary>
+        /// <value>The auto vacuum mode.</value>
+        public SqliteAutoVacuumMode AutoVacuum
+        {
+            get => _configuration.AutoVacuum;
+            set
+            {
+                if (_configuration.AutoVacuum != value)
+                {
+                    _configuration.AutoVacuum = value;
+                    SetAutoVacuum();
+                }
+            }
+        }
+
+        private void SetAutoVacuum()
+        {
+            if (_state != ConnectionState.Open)
+            {
+                return;
+            }
+
+            string mode = null;
+            switch (_configuration.AutoVacuum)
+            {
+                case SqliteAutoVacuumMode.Undefined:
+                    return;
+                case SqliteAutoVacuumMode.Incremental:
+                    mode = "INCREMENTAL";
+                    break;
+                case SqliteAutoVacuumMode.Full:
+                    mode = "FULL";
+                    break;
+                case SqliteAutoVacuumMode.None:
+                    mode = "None";
+                    break;
+            }
+
+            this.ExecuteNonQuery($"PRAGMA auto_vacuum = {mode};");
+        }
+
+        /// <summary>
         ///     Gets the <see cref="DbProviderFactory" /> for this connection.
         /// </summary>
         /// <value>The <see cref="DbProviderFactory" />.</value>
@@ -143,6 +415,13 @@ namespace Microsoft.Data.Sqlite
                 OnStateChange(new StateChangeEventArgs(originalState, value));
             }
         }
+
+        /// <summary>
+        /// Gets the current configuration of the connection.
+        /// </summary>
+        /// <returns>The current configuration of the connection.</returns>
+        public SqliteConfiguration CurrentConfiguration()
+            => _configuration.Clone();
 
         /// <summary>
         ///     Opens a connection to the database using the value of <see cref="ConnectionString" />. If
@@ -331,8 +610,13 @@ namespace Microsoft.Data.Sqlite
                 throw new InvalidOperationException(Resources.CallRequiresOpenConnection(nameof(CreateCollation)));
             }
 
-            var collation = comparison != null ? (v, s1, s2) => comparison((T)v, s1, s2) : (delegate_collation)null;
-            var rc = raw.sqlite3_create_collation(_db, name, state, collation);
+            var (_, collation, obj) = _configuration.AddCollationCore(name, state, comparison);
+            CreateCollationCore(name, collation, obj);
+        }
+        
+        private void CreateCollationCore(string name, delegate_collation collation, object obj)
+        {
+            var rc = raw.sqlite3_create_collation(_db, name, obj, collation);
             SqliteException.ThrowExceptionForRC(rc, _db);
         }
 
@@ -467,40 +751,18 @@ namespace Microsoft.Data.Sqlite
                 throw new InvalidOperationException(Resources.CallRequiresOpenConnection(nameof(CreateFunction)));
             }
 
-            delegate_function_scalar func = null;
-            if (function != null)
-            {
-                func = (ctx, user_data, args) =>
-                    {
-                        // TODO: Avoid allocation when niladic
-                        var values = new SqliteParameterReader(name, args);
-
-                        try
-                        {
-                            // TODO: Avoid closure by passing function via user_data
-                            var result = function((TState)user_data, values);
-
-                            new SqliteResultBinder(ctx, result).Bind();
-                        }
-                        catch (Exception ex)
-                        {
-                            raw.sqlite3_result_error(ctx, ex.Message);
-
-                            if (ex is SqliteException sqlEx)
-                            {
-                                // NB: This must be called after sqlite3_result_error()
-                                raw.sqlite3_result_error_code(ctx, sqlEx.SqliteErrorCode);
-                            }
-                        }
-                    };
-            }
-
+            var (_, _, func, flags, obj) = _configuration.AddFunctionCore(name, arity, state, function, isDeterministic);
+            CreateFunctionCore(name, arity, func, flags, obj);
+        }
+        
+        private void CreateFunctionCore(string name, int arity, delegate_function_scalar func, int flags, object obj)
+        {
             var rc = raw.sqlite3_create_function(
                 _db,
                 name,
                 arity,
-                isDeterministic ? raw.SQLITE_DETERMINISTIC : 0,
-                state,
+                flags,
+                obj,
                 func);
             SqliteException.ThrowExceptionForRC(rc, _db);
         }
@@ -523,99 +785,22 @@ namespace Microsoft.Data.Sqlite
                 throw new InvalidOperationException(Resources.CallRequiresOpenConnection(nameof(CreateAggregate)));
             }
 
-            delegate_function_aggregate_step func_step = null;
-            if (func != null)
-            {
-                func_step = (ctx, user_data, args) =>
-                    {
-                        var context = (AggregateContext<TAccumulate>)user_data;
-                        if (context.Exception != null)
-                        {
-                            return;
-                        }
+            var (_, _, flags, obj, func_step, func_final) = _configuration.AddAggregateCore(
+                name, arity, seed, func, resultSelector, isDeterministic);
+            CreateAggregateCore(name, arity, flags, obj, func_step, func_final);
+        }
 
-                        // TODO: Avoid allocation when niladic
-                        var reader = new SqliteParameterReader(name, args);
-
-                        try
-                        {
-                            // TODO: Avoid closure by passing func via user_data
-                            // NB: No need to set ctx.state since we just mutate the instance
-                            context.Accumulate = func(context.Accumulate, reader);
-                        }
-                        catch (Exception ex)
-                        {
-                            context.Exception = ex;
-                        }
-                    };
-            }
-
-            delegate_function_aggregate_final func_final = null;
-            if (resultSelector != null)
-            {
-                func_final = (ctx, user_data) =>
-                    {
-                        var context = (AggregateContext<TAccumulate>)user_data;
-
-                        if (context.Exception == null)
-                        {
-                            try
-                            {
-                                // TODO: Avoid closure by passing resultSelector via user_data
-                                var result = resultSelector(context.Accumulate);
-
-                                new SqliteResultBinder(ctx, result).Bind();
-                            }
-                            catch (Exception ex)
-                            {
-                                context.Exception = ex;
-                            }
-                        }
-
-                        if (context.Exception != null)
-                        {
-                            raw.sqlite3_result_error(ctx, context.Exception.Message);
-
-                            if (context.Exception is SqliteException sqlEx)
-                            {
-                                // NB: This must be called after sqlite3_result_error()
-                                raw.sqlite3_result_error_code(ctx, sqlEx.SqliteErrorCode);
-                            }
-                        }
-                    };
-            }
-
+        private void CreateAggregateCore(string name, int arity, int flags, object obj, delegate_function_aggregate_step func_step, delegate_function_aggregate_final func_final)
+        {
             var rc = raw.sqlite3_create_function(
                 _db,
                 name,
                 arity,
-                isDeterministic ? raw.SQLITE_DETERMINISTIC : 0,
-                new AggregateContext<TAccumulate>(seed),
+                flags,
+                obj,
                 func_step,
                 func_final);
             SqliteException.ThrowExceptionForRC(rc, _db);
-        }
-
-        private static Func<TState, SqliteValueReader, TResult> IfNotNull<TState, TResult>(
-            object x,
-            Func<TState, SqliteValueReader, TResult> value)
-            => x != null ? value : null;
-
-        private static object[] GetValues(SqliteValueReader reader)
-        {
-            var values = new object[reader.FieldCount];
-            reader.GetValues(values);
-
-            return values;
-        }
-
-        private class AggregateContext<T>
-        {
-            public AggregateContext(T seed)
-                => Accumulate = seed;
-
-            public T Accumulate { get; set; }
-            public Exception Exception { get; set; }
         }
     }
 }
