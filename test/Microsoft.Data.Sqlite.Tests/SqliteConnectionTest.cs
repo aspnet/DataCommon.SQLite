@@ -985,6 +985,38 @@ namespace Microsoft.Data.Sqlite
             }
         }
 
+        [Fact]
+        public void Connection_configuration_works()
+        {
+            SqliteConfiguration configuration;
+            using (var connection = new SqliteConnection("Data Source=:memory:"))
+            {
+                connection.ForeignKeys = false;
+                connection.Open();
+                connection.CreateCollation("MY_NOCASE", (s1, s2) => string.Compare(s1, s2, StringComparison.OrdinalIgnoreCase));
+                connection.CreateFunction("test", 1L, (long state, long x, int y) => $"{state} {x} {y}");
+
+                configuration = connection.CurrentConfiguration();
+            }
+
+            configuration.AddAggregate(
+                    "testA",
+                    "A",
+                    (string a, string x, int y) => a + x + y,
+                    a => a + "Z");
+
+            using (var connection = new SqliteConnection("Data Source=:memory:", configuration))
+            {
+                connection.Open();
+                Assert.Equal(0L, connection.ExecuteScalar<long>("PRAGMA foreign_keys;"));
+                Assert.Equal(1L, connection.ExecuteScalar<long>("SELECT 'Νικοσ' = 'ΝΙΚΟΣ' COLLATE MY_NOCASE;"));
+                Assert.Equal("1 2 3", connection.ExecuteScalar<string>("SELECT test(2, 3);"));
+
+                connection.ExecuteNonQuery("CREATE TABLE dual2 (dummy1, dummy2); INSERT INTO dual2 (dummy1, dummy2) VALUES ('X', 1);");
+                Assert.Equal("AX1Z", connection.ExecuteScalar<string>("SELECT testA(dummy1, dummy2) FROM dual2;"));
+            }
+        }
+
 #if !NETCOREAPP2_0
         [Fact]
         public void DbProviderFactory_works()

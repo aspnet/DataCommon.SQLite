@@ -8,7 +8,7 @@ using System;
 
 namespace Microsoft.Data.Sqlite
 {
-    partial class SqliteConnection
+    partial class SqliteConfiguration
     {
 <#
     var ordinal = new[] { "first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "ninth", "tenth", "eleventh", "twelfth", "thirteenth", "fourteenth", "fifteenth", "sixteenth" };
@@ -80,7 +80,7 @@ namespace Microsoft.Data.Sqlite
             }
 #>
         /// <summary>
-        ///     Creates or redefines a SQL function.
+        ///     Adds a SQL function.
         /// </summary>
 <# if (state) { #>
         /// <typeparam name="TState">The type of the state.</typeparam>
@@ -95,15 +95,15 @@ namespace Microsoft.Data.Sqlite
 <# } #>
         /// <param name="function">The function to be invoked.</param>
         /// <param name="isDeterministic">Flag indicating whether the function is deterministic.</param>
-        public virtual void CreateFunction<<#= typeArguments #>>(string name, <#= stateParameter #>Func<<#= typeArguments #>> function, bool isDeterministic = false)
-            => CreateFunctionCore(name, <#= arity #>, <#= stateArgument #>, SqliteConfiguration.IfNotNull<<#= stateParameterType #>, TResult>(function, (s, r) => function(<#= lambdaArguments #>)), isDeterministic);
+        public virtual void AddFunction<<#= typeArguments #>>(string name, <#= stateParameter #>Func<<#= typeArguments #>> function, bool isDeterministic = false)
+            => AddFunctionCore(name, <#= arity #>, <#= stateArgument #>, IfNotNull<<#= stateParameterType #>, TResult>(function, (s, r) => function(<#= lambdaArguments #>)), isDeterministic);
 <#
         }
 
 #>
 
         /// <summary>
-        ///     Creates or redefines a SQL function.
+        ///     Adds a SQL function.
         /// </summary>
 <# if (state) { #>
         /// <typeparam name="TState">The type of the state.</typeparam>
@@ -115,8 +115,8 @@ namespace Microsoft.Data.Sqlite
 <# } #>
         /// <param name="function">The function to be invoked.</param>
         /// <param name="isDeterministic">Flag indicating whether the function is deterministic.</param>
-        public virtual void CreateFunction<<#= stateTypeArgument #>TResult>(string name, <#= stateParameter #>Func<<#= stateTypeArgument #>object[], TResult> function, bool isDeterministic = false)
-            => CreateFunctionCore(name, -1, <#= stateArgument #>, SqliteConfiguration.IfNotNull<<#= stateParameterType #>, TResult>(function, (s, r) => function(<#= lambdaStateArgument #>SqliteConfiguration.GetValues(r))), isDeterministic);
+        public virtual void AddFunction<<#= stateTypeArgument #>TResult>(string name, <#= stateParameter #>Func<<#= stateTypeArgument #>object[], TResult> function, bool isDeterministic = false)
+            => AddFunctionCore(name, -1, <#= stateArgument #>, IfNotNull<<#= stateParameterType #>, TResult>(function, (s, r) => function(<#= lambdaStateArgument #>GetValues(r))), isDeterministic);
 <#
     }
 #>
