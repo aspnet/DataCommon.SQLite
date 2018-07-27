@@ -230,7 +230,7 @@ namespace Microsoft.Data.Sqlite
                 throw new InvalidOperationException(Resources.CallRequiresOpenConnection(nameof(Prepare)));
             }
 
-            if (string.IsNullOrEmpty(_commandText))
+            if (string.IsNullOrWhiteSpace(_commandText))
             {
                 throw new InvalidOperationException(Resources.CallRequiresSetCommandText(nameof(Prepare)));
             }
@@ -298,7 +298,7 @@ namespace Microsoft.Data.Sqlite
                 throw new InvalidOperationException(Resources.CallRequiresOpenConnection(nameof(ExecuteReader)));
             }
 
-            if (string.IsNullOrEmpty(_commandText))
+            if (string.IsNullOrWhiteSpace(_commandText))
             {
                 throw new InvalidOperationException(Resources.CallRequiresSetCommandText(nameof(ExecuteReader)));
             }
@@ -479,15 +479,15 @@ namespace Microsoft.Data.Sqlite
             {
                 throw new InvalidOperationException(Resources.CallRequiresOpenConnection(nameof(ExecuteNonQuery)));
             }
-            if (_commandText == null)
+            if (string.IsNullOrWhiteSpace(_commandText))
             {
                 throw new InvalidOperationException(Resources.CallRequiresSetCommandText(nameof(ExecuteNonQuery)));
             }
 
-            var reader = ExecuteReader();
-            reader.Dispose();
-
-            return reader.RecordsAffected;
+            using (var reader = ExecuteReader())
+            {
+                return reader.RecordsAffected;
+            }
         }
 
         /// <summary>
@@ -501,7 +501,7 @@ namespace Microsoft.Data.Sqlite
             {
                 throw new InvalidOperationException(Resources.CallRequiresOpenConnection(nameof(ExecuteScalar)));
             }
-            if (_commandText == null)
+            if (string.IsNullOrWhiteSpace(_commandText))
             {
                 throw new InvalidOperationException(Resources.CallRequiresSetCommandText(nameof(ExecuteScalar)));
             }

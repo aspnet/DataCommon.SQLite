@@ -37,7 +37,7 @@ namespace Microsoft.Data.Sqlite
         /// <param name="value">The value of the parameter. Can be null.</param>
         public SqliteParameter(string name, object value)
         {
-            if (string.IsNullOrEmpty(name))
+            if (string.IsNullOrWhiteSpace(name))
             {
                 throw new ArgumentNullException(nameof(name));
             }
@@ -53,7 +53,7 @@ namespace Microsoft.Data.Sqlite
         /// <param name="type">The type of the parameter.</param>
         public SqliteParameter(string name, SqliteType type)
         {
-            if (string.IsNullOrEmpty(name))
+            if (string.IsNullOrWhiteSpace(name))
             {
                 throw new ArgumentNullException(nameof(name));
             }
@@ -134,7 +134,7 @@ namespace Microsoft.Data.Sqlite
             get => _parameterName;
             set
             {
-                if (string.IsNullOrEmpty(value))
+                if (string.IsNullOrWhiteSpace(value))
                 {
                     throw new ArgumentNullException(nameof(value));
                 }
