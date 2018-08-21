@@ -42,7 +42,7 @@ namespace BulkInsertSample
                 insertCommand.Parameters.Add(valueParameter);
 
                 // No need to call Prepare() since it's done lazily during the first execution.
-                //insertCommand.Prepare();
+                // insertCommand.Prepare();
 
                 var random = new Random();
 

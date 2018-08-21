@@ -155,7 +155,7 @@ namespace Microsoft.Data.Sqlite
             {
                 return;
             }
-            if (ConnectionString == null)
+            if (string.IsNullOrWhiteSpace(ConnectionString))
             {
                 throw new InvalidOperationException(Resources.OpenRequiresSetConnectionString);
             }
