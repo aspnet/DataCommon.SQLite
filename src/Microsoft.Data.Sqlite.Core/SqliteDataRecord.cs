@@ -178,7 +178,8 @@ namespace Microsoft.Data.Sqlite
 
             long bytesToRead = (long)blob.Length - dataOffset;
             bytesToRead = System.Math.Min(bytesToRead, length);
-            Array.Copy(blob, dataOffset, buffer, bufferOffset, bytesToRead);
+            if (buffer != null)
+                Array.Copy(blob, dataOffset, buffer, bufferOffset, bytesToRead);
             return bytesToRead;
         }
 
