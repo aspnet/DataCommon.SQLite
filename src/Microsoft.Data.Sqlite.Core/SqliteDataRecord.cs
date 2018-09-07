@@ -177,9 +177,11 @@ namespace Microsoft.Data.Sqlite
             var blob = GetCachedBlob(ordinal);
 
             long bytesToRead = (long)blob.Length - dataOffset;
-            bytesToRead = System.Math.Min(bytesToRead, length);
             if (buffer != null)
+            {
+                bytesToRead = System.Math.Min(bytesToRead, length);
                 Array.Copy(blob, dataOffset, buffer, bufferOffset, bytesToRead);
+            }
             return bytesToRead;
         }
 
