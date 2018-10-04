@@ -251,30 +251,35 @@ namespace Microsoft.Data.Sqlite
                 command.Parameters.AddWithValue("@BlobSize", 5);
                 command.ExecuteNonQuery();
 
-                using (var blob = connection.OpenBlob("main", "DataTable", "Data", 5, true))
+                using (var blob = new SqliteBlob(connection, "main", "DataTable", "Data", 5, writable: true))
                 {
                     Assert.Equal(4, blob.Length);
                     var buffer = new byte[2];
-                    blob.ReadBytes(buffer, 2, 1);
+                    blob.Position = 1;
+                    blob.Read(buffer, 0, 2);
                     Assert.Equal(new byte[2] { 0x02, 0x03 }, buffer);
                     buffer = new byte[2] { 0x42, 0x43 };
-                    blob.WriteBytes(buffer, 2, 1);
+                    blob.Seek(1, SeekOrigin.Begin);
+                    blob.Write(buffer, 0, 2);
                     buffer = new byte[4];
-                    blob.ReadBytes(buffer, 4, 0);
+                    blob.Seek(-3, SeekOrigin.Current);
+                    blob.Read(buffer, 0, 4);
                     Assert.Equal(new byte[4] { 0x01, 0x42, 0x43, 0x04 }, buffer);
                 }
 
                 // TODO: when sqlite3_blob_reopen is added to SQLitePCL.raw add possibility to change the rowid
-                using (var blob = connection.OpenBlob("main", "DataTable", "Data", 7, true))
+                using (var blob = new SqliteBlob(connection, "main", "DataTable", "Data", 7, writable: true))
                 {
                     Assert.Equal(5, blob.Length);
                     var buffer = new byte[5];
-                    blob.ReadBytes(buffer, 5, 0);
+                    blob.Read(buffer, 0, 5);
                     Assert.Equal(new byte[5] { 0, 0, 0, 0, 0 }, buffer);
+                    blob.Seek(0, SeekOrigin.Begin);
                     var writeBuffer = new byte[5] { 0x10, 0x20, 0x30, 0x40, 0x50 };
-                    blob.WriteBytes(writeBuffer, 5, 0);
+                    blob.Write(writeBuffer, 0, 5);
                     buffer = new byte[5];
-                    blob.ReadBytes(buffer, 5, 0);
+                    blob.Seek(0, SeekOrigin.Begin);
+                    blob.Read(buffer, 0, 5);
                     Assert.Equal(writeBuffer, buffer);
                 }
             }
