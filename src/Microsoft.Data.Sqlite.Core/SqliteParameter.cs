@@ -221,7 +221,7 @@ namespace Microsoft.Data.Sqlite
                 return false;
             }
 
-            if ((_value == null) && !((_sqliteType == SqliteType.Blob) && _size.HasValue))
+            if (_value == null)
             {
                 throw new InvalidOperationException(Resources.RequiresSet(nameof(Value)));
             }

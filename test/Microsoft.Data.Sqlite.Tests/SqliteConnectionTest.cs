@@ -246,9 +246,9 @@ namespace Microsoft.Data.Sqlite
                     "INSERT INTO DataTable VALUES (5, X'01020304');");
 
                 var command = connection.CreateCommand();
-                command.CommandText = "INSERT INTO DataTable VALUES (@Id, @BlobValue);";
+                command.CommandText = "INSERT INTO DataTable VALUES (@Id, zeroblob(@BlobSize));";
                 command.Parameters.AddWithValue("@Id", 7);
-                command.Parameters.Add("@BlobValue", SqliteType.Blob, 5);
+                command.Parameters.AddWithValue("@BlobSize", 5);
                 command.ExecuteNonQuery();
 
                 using (var blob = connection.OpenBlob("main", "DataTable", "Data", 5, true))
