@@ -16,6 +16,7 @@ namespace Microsoft.Data.Sqlite
 
         private readonly sqlite3_blob _blob;
         private readonly sqlite3 _db;
+        private readonly bool _writable;
         private readonly long _length;
         private bool _disposed = false;
         private int _position = 0;
@@ -53,6 +54,7 @@ namespace Microsoft.Data.Sqlite
         public SqliteBlob(SqliteConnection connection, string databaseName, string tableName, string columnName, long rowid, bool writable)
         {
             _db = connection.Handle;
+            _writable = writable;
             var rc = raw.sqlite3_blob_open(_db, databaseName, tableName, columnName, rowid, writable ? 1 : 0, out _blob);
             SqliteException.ThrowExceptionForRC(rc, _db);
             _length = raw.sqlite3_blob_bytes(_blob);
@@ -70,7 +72,7 @@ namespace Microsoft.Data.Sqlite
         /// Gets a value indicating whether the current stream supports writing.
         /// </summary>
         /// <value>true if the stream supports writing; otherwise, false.</value>
-        public override bool CanWrite { get; }
+        public override bool CanWrite => _writable;
 
         /// <summary>
         /// Gets a value indicating whether the current stream supports seeking.
@@ -140,6 +142,10 @@ namespace Microsoft.Data.Sqlite
         /// <param name="count">The number of bytes to be written to the current stream.</param>
         public override void Write(byte[] buffer, int offset, int count)
         {
+            if (!_writable)
+            {
+                throw new InvalidOperationException("Blob is not openned as writable!");
+            }
             if (buffer == null)
             {
                 throw new ArgumentNullException(nameof(buffer));

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.IO;
 using Microsoft.Data.Sqlite.Properties;
 using Xunit;
 
@@ -130,7 +131,7 @@ namespace Microsoft.Data.Sqlite
                     Assert.Equal(3, bytesRead);
 
                     var correctBytes = new byte[3] { 0x7E, 0x57, 0x43 };
-                    for(int i = 0; i < bytesRead; i++)
+                    for (int i = 0; i < bytesRead; i++)
                     {
                         Assert.Equal(correctBytes[i], hugeBuffer[i]);
                     }
@@ -188,7 +189,7 @@ namespace Microsoft.Data.Sqlite
                     Assert.Equal(3, charsRead);
 
                     var correctBytes = new char[3] { 'e', 's', 't' };
-                    for(int i = 0; i < charsRead; i++)
+                    for (int i = 0; i < charsRead; i++)
                     {
                         Assert.Equal(correctBytes[i], hugeBuffer[i]);
                     }
@@ -213,6 +214,53 @@ namespace Microsoft.Data.Sqlite
                     var stream2 = reader.GetStream(0);
                     Assert.Equal(0x42, stream2.ReadByte());
                     Assert.Equal(0x7E, stream.ReadByte());
+                }
+            }
+        }
+
+
+        [Theory]
+        [InlineData("CREATE TABLE DataTable (Id INTEGER, Data BLOB);", "SELECT rowid, Data FROM DataTable WHERE Id = 7")]
+        [InlineData("CREATE TABLE DataTable (Id INTEGER PRIMARY KEY, Data BLOB);", "SELECT rowid, Data FROM DataTable WHERE Id = 7")]
+        [InlineData("CREATE TABLE DataTable (Id INTEGER PRIMARY KEY, Data BLOB);", "SELECT Id, Data FROM DataTable WHERE Id = 7")]
+        public void GetStream_Blob_works(string createTableCmd, string selectCmd)
+        {
+            using (var connection = new SqliteConnection("Data Source=:memory:"))
+            {
+                connection.Open();
+
+                connection.ExecuteNonQuery(
+                    createTableCmd + "INSERT INTO DataTable VALUES (5, X'01020304');");
+
+                var command = connection.CreateCommand();
+                command.CommandText = "INSERT INTO DataTable VALUES (@Id, zeroblob(@BlobSize));";
+                command.Parameters.AddWithValue("@Id", 7);
+                command.Parameters.AddWithValue("@BlobSize", 5);
+                command.ExecuteNonQuery();
+
+                var writeBuffer = new byte[5] { 0x10, 0x20, 0x30, 0x40, 0x50 };
+                var testBuffer = new byte[6] { writeBuffer[0], writeBuffer[1], writeBuffer[2], writeBuffer[3], writeBuffer[4], 0x00 };
+
+                var selectCommand = connection.CreateCommand();
+                selectCommand.CommandText = selectCmd;
+                using (var reader = selectCommand.ExecuteReader())
+                {
+                    Assert.True(reader.Read());
+                    using (var destinationStream = reader.GetStream(1, writable: true))
+                    {
+                        Assert.True(destinationStream is SqliteBlob);
+                        var sourceStream = new MemoryStream(writeBuffer);
+                        sourceStream.CopyTo(destinationStream);
+                    }
+                }
+
+                using (var reader = selectCommand.ExecuteReader())
+                {
+                    Assert.True(reader.Read());
+                    var buffer = new byte[6];
+                    var bytesRead = reader.GetBytes(1, 0, buffer, 0, buffer.Length);
+                    Assert.Equal(5, bytesRead);
+                    Assert.Equal(testBuffer, buffer);
                 }
             }
         }
